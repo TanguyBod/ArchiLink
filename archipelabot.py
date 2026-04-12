@@ -66,7 +66,7 @@ class TrackerClient() :
                         self.datapackage = message
                     if message["cmd"] == "Connected" :
                         for slot, slot_info in message["slot_info"].items() :
-                            player_slot = slot
+                            player_slot = int(slot)
                             player_game = slot_info["game"]
                             player_name = slot_info["name"]
                             if player_game == "Archipelago" :
@@ -88,32 +88,31 @@ class TrackerClient() :
             data_list = message["data"]
             for data in data_list :
                 await messages_to_send.put(data['text'])
-        if message["type"] == "Part" :
+        if message["type"] == "ItemSend" :
             msg_str = ""; flag = None
-            msg_summary = []; player_recieving = None
+            msg_summary = []; player_recieving = None; player_sending = None
             for data in message["data"] :
-                if data["text"] in ["(", ")"] :
+                if data["text"].strip() in ["(", ")"] :
                     continue
                 elif "type" not in data.keys():
                     msg_str += data["text"]
                 elif data["type"] == "player_id" :
-                    player_slot = data["text"]
-                    player = await self.player_db.get_player(player_slot)
-                    msg_str += f"{player.player_name}"
-                    msg_summary.append(f"{player.player_name}")
+                    player_slot = int(data["text"])
+                    player_sending = await self.player_db.get_player_by_slot(player_slot)
+                    msg_str += f"{player_sending.player_name}"
+                    msg_summary.append(f"{player_sending.player_name}")
                 elif data["type"] == "item_id" :
                     item_id = data["text"]
-                    player_recieving = await self.player_db.get_player(data["player"])
+                    player_recieving = await self.player_db.get_player_by_slot(int(data["player"]))
                     game_receiving = player_recieving.player_game
                     flag = data["flags"]
                     color = await get_ansi_color_from_flag(flag)
-                    # find item name in datapackage
                     item_name = self.datapackage["data"]["games"][game_receiving]["id_to_item_name"][item_id]
                     msg_str += f"\u001b[0;{color}m{item_name}\u001b[0m"
                     msg_summary.append(item_name)
                 elif data["type"] == "location_id" :
                     location_id = data["text"]
-                    player_sending = await self.player_db.get_player(data["player"])
+                    player_sending = await self.player_db.get_player_by_slot(int(data["player"]))
                     game_sending = player_sending.player_game
                     location_name = self.datapackage["data"]["games"][game_sending]["id_to_location_name"][location_id]
                     msg_str += f"\nCheck: {location_name}"
@@ -122,8 +121,11 @@ class TrackerClient() :
                     print(f"Unknown data type : {data["type"]}")
             if player_recieving is None :
                 raise ValueError(f"Player receiving item not found in message : {message}")
-            player_recieving.new_items.append((msg_summary, flag))
-            await messages_to_send.put((msg_str, flag))
+            if player_sending.player_slot == player_recieving.player_slot :
+                player_recieving.new_items.append((msg_summary, flag))
+            await messages_to_send.put(msg_str)
+        else :
+            print(f"Unknown message type : {message['type']}")
 
     async def check_data_package(self) -> None :
         print("-- Checking DataPackage.")
@@ -148,7 +150,7 @@ class TrackerClient() :
             'uuid': self.uuid,
         }
         await self.send_message(payload)
-        
+
     async def send_message(self, message: dict) -> None :
         try :
             await self.ap_connection.send(json.dumps([message]))
@@ -167,7 +169,6 @@ class TrackerClient() :
         reverse = {"cmd": "DataPackage", "data" : {"games" : {}}}
         games = self.datapackage["data"]["games"]
         played_games = await self.player_db.get_all_played_games()
-        print(f"Keeping games : {played_games}")
         for game_name, game_data in games.items():
             if game_name not in played_games :
                 continue # No need to store data for unplayed games
@@ -176,9 +177,9 @@ class TrackerClient() :
                 "id_to_location_name": {}
             }
             for item_name, item_id in game_data["item_name_to_id"].items():
-                reverse["data"]["games"][game_name]["id_to_item_name"][item_id] = item_name
+                reverse["data"]["games"][game_name]["id_to_item_name"][str(item_id)] = item_name
             for location_name, location_id in game_data["location_name_to_id"].items() :
-                reverse["data"]["games"][game_name]["id_to_location_name"][location_id] = location_name
+                reverse["data"]["games"][game_name]["id_to_location_name"][str(location_id)] = location_name
         self.datapackage = reverse
 
 async def get_ansi_color_from_flag(flag: int) -> int :
@@ -216,12 +217,15 @@ class PlayerDB :
                     ) -> Player :
         if player_slot in self.players :
             raise ValueError(f"Player slot {player_slot} already exists.")
-        player = Player(player_slot, player_game, player_name, discord_id)
+        player = Player(int(player_slot), player_game, player_name, discord_id)
         self.players[player_slot] = player
         return player
 
     async def get_player_by_slot(self, player_slot : int) -> Player :
-        return self.players.get(player_slot, None)
+        for player in self.players.values() :
+            if player.player_slot == player_slot :
+                return player
+        return None
     
     async def get_player_by_name(self, player_name : str) -> Player :
         for player in self.players.values() :
@@ -243,6 +247,10 @@ class PlayerDB :
     
     async def get_all_discord_ids(self) -> list[int] :
         return [player.discord_id for player in self.players.values() if player.discord_id is not None]
+
+    async def print_players(self) -> None :
+        for player in self.players.values() :
+            print(f"Player {player.player_name or 'Unknown'} in slot {player.player_slot or 'Unknown'} playing {player.player_game or 'Unknown'} registered to discord id {player.discord_id or 'Unknown'}.")
 
 # Init player db and tracker :
 tracker_client = TrackerClient()
@@ -270,7 +278,7 @@ async def register(ctx, player_name: str) :
     if player_name not in await tracker_client.player_db.get_all_players_names() :
         await ctx.send(f"Player name {player_name} not found. Please check the spelling and try again.\n\
 Available player names are : {', '.join(await tracker_client.player_db.get_all_players_names())}")
-    elif await tracker_client.player_db.get_player_by_name(player_name) is not None :
+    elif await tracker_client.player_db.get_player_by_name(player_name) is None :
         player = await tracker_client.player_db.get_player_by_name(player_name)
         await ctx.send(f"Player {player_name} is already registered by {player.discord_id}.\nIf you think this is an error, please contact the administrator.")
     else :
@@ -296,19 +304,43 @@ Available player names are : {', '.join(await tracker_client.player_db.get_all_p
             player.discord_id = None
             await ctx.send(f"Player {player_name} successfully unregistered from discord user {ctx.author.name}#{ctx.author.discriminator}.")
 
-@tasks.loop(seconds=1)
-async def process_new_items() :
-    while not messages_to_send.empty() :
-        msg_str = await messages_to_send.get()
-   
-
 @bot.command()
-async def test(ctx) :
-    message = "```ansi\n\u001b[0;33mYellow item\u001b[0m \n\u001b[0;34mBlue item\u001b[0m \n\u001b[0;31mRed item\u001b[0m \nNormal text```"
-    await ctx.send(message)
+async def new(ctx) :
+    discord_id = ctx.author.id
+    player = await tracker_client.player_db.get_player_by_discord_id(discord_id)
+    if player is None :
+        await ctx.send(f"You are not registered to any player. Please register first using `!register <player_name>` command.")
+    elif len(player.new_items) == 0 :
+        # DM player if no new items, to avoid spamming the channel
+        # Check if bot can DM the user
+        user = await bot.fetch_user(discord_id)
+        if user.dm_channel is None :
+            await user.create_dm() 
+        await user.dm_channel.send("You have not received any new items since the last time you checked.")
+    else :
+        msg_str = f"You have received {len(player.new_items)} new item(s) since the last time you checked :\n"
+        for item_summary, flag in player.new_items :
+            color = await get_ansi_color_from_flag(flag)
+            msg_str += f"\u001b[0;{color}m- {' | '.join(item_summary)}\u001b[0m\n"
+        await ctx.send(msg_str)
+        player.new_items = [] # Clear new items after sending
+
+@tasks.loop(seconds=1)
+async def process_new_items():
+    try:
+        msg_str = messages_to_send.get_nowait()
+    except asyncio.QueueEmpty:
+        return
+    msg_str = "```ansi\n" + msg_str + "\n```"
+    channel = bot.get_channel(NORMAL_CHANNEL_ID) or await bot.fetch_channel(NORMAL_CHANNEL_ID)
+    if channel:
+        await channel.send(msg_str)
+   
+@bot.event
+async def on_ready():
+    process_new_items.start()
 
 async def main():
-
     await asyncio.gather(
         tracker_client.run(),
         bot.start(APP_TOKEN)
