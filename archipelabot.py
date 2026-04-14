@@ -8,7 +8,7 @@ import os
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-
+from PlayerClient import PlayerClient
 # All configuration will be defined in the config.json file.
 
 config = json.load(open("config.json", "r"))
@@ -281,7 +281,7 @@ class Item :
 
 # Init player db and tracker :
 tracker_client = TrackerClient()
-
+player_client = PlayerClient("Adam")
 
 # ==============================================================
 #                     Discord Bot part
@@ -293,6 +293,19 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 NORMAL_CHANNEL_ID = config["DiscordConfig"]["normal_channel_id"]
 ADMIN_CHANNEL_ID = config["DiscordConfig"]["admin_channel_id"]
 APP_TOKEN = config["DiscordConfig"]["app_token"]
+@bot.command()
+async def hint(ctx, *, hint: str):
+    try:
+        print(f"player id : ${ctx.author.id}")
+        player = await tracker_client.player_db.get_player_by_discord_id(ctx.author.id)
+        print(f"player slot : ${player.player_slot}")
+        player_client_instance = PlayerClient(player.player_name)
+        await player_client_instance.connect()
+        await player_client_instance.send_connect()
+        data = await player_client_instance.send_hint(hint)
+        ctx.send(f"data: {data}")
+    except e:
+        print(f"Error creating player: {e}")
 
 @bot.command()
 async def players(ctx):
@@ -381,6 +394,7 @@ async def on_ready():
 
 async def main():
     await asyncio.gather(
+        #player_client.run(),
         tracker_client.run(),
         bot.start(APP_TOKEN)
     )
