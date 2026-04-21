@@ -3,11 +3,16 @@
         "client_url" : "",
         "client_port" : "",
         "password" : null,
-        "bot_slot" : ""
+        "bot_slot" : "Archipelabot"
     },
     "DiscordConfig": {
         "app_token" : "",
         "normal_channel_id" : "",
-        "admin_channel_id" : ""
+        "ping_channel_id" : "", 
+        "debug_channel_id" : "",
+        "command_prefix" : "!"
+    },
+    "DatabaseConfig": {
+        "data_directory" : "./data"
     }
 }
