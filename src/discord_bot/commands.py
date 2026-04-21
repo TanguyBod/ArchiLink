@@ -27,6 +27,9 @@ def setup_commands(bot):
                     message = await hint_client_instance.discord_bot_queue.get()
                     try :
                         message, item = message
+                        if "(found)" in message : # Do not add the possibility to add to todo list if already found
+                            await ctx.send(message)
+                            continue
                         button = Button(item, bot.tracker_client)
                         message = await ctx.send(message, view=button)
                         button.message = message
