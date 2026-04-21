@@ -40,23 +40,26 @@ class HintClient(ArchipelagoClient) :
                     self.hintpoints = message["hint_points"]
                     await self.send_hint()
                 if message["cmd"] == "PrintJSON" :
-                    self.logger.debug(f"Processing message HintClient {self.slot_name} :\n{message}")
+                    self.logger.info(f"Processing message HintClient {self.slot_name} :\n{message}")
                     if message["type"] == 'CommandResult' :
                         text = message["data"][0]["text"]
-                        self.logger.debug(f"Received hint result : {text}")
+                        self.logger.info(f"Received hint result : {text}")
                         await self.discord_bot_queue.put(message["data"][0]["text"])
                         self.running = False # Running = False to stop workers
                         self.finished_event.set() # Signal that the hint has been processed to stop the client
                     if message["type"] == "Hint" :
                         msg, item = await self.parse_hint(message["data"])
-                        self.logger.debug(f"Parsed hint : {msg} with item : {item.__str__()}")
+                        self.logger.info(f"Parsed hint : {msg} with item : {item.__str__()})")
                         await self.discord_bot_queue.put((msg, item))
                         self.hint_found = True
-                        self.running = False # Running = False to stop workers
-                        self.finished_event.set() # Signal that the hint has been processed to stop the client
             except Exception as e:
                 self.logger.error(f"Error processing message (HintClient {self.slot_name}): {e}")
                 continue
+            
+            if self.hint_found and self.message_queue.empty() :
+                self.logger.info(f"No more messages to process for hint client {self.slot_name}, stopping client.")
+                self.running = False
+                self.finished_event.set()
         
     async def parse_hint(self, data : list[dict]) -> tuple[str, Item] :
         item = Item()

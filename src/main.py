@@ -1,19 +1,21 @@
 import asyncio
+import os
 from utils.config import load_config
 from archipelago.tracker_client import TrackerClient
 from discord_bot.bot import create_bot
 from asyncio import Queue
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("Archipelabot")
 
 async def main():
     config = load_config()
     message_queue = Queue(maxsize=2000)
+    ping_queue = Queue(maxsize=2000)
 
-    tracker_client = TrackerClient(config, message_queue, logger)
-    bot = create_bot(tracker_client, message_queue, config, logger)
+    tracker_client = TrackerClient(config, message_queue, ping_queue, logger)
+    bot = create_bot(tracker_client, message_queue, ping_queue, config, logger)
 
     try:
         await asyncio.gather(
@@ -23,6 +25,8 @@ async def main():
 
     finally:
         logger.info("\nShutting down cleanly...")
+        # Make sure data folder exists
+        os.makedirs(config["DatabaseConfig"]["data_directory"], exist_ok=True)
         tracker_client.player_db.save_db(f"{config['DatabaseConfig']['data_directory']}/players.json")
         await tracker_client.stop()
         await bot.close()

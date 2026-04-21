@@ -7,8 +7,12 @@ def setup_events(bot):
 
     @bot.event
     async def on_ready():
-        channel = bot.get_channel(bot.normal_channel_id)
-
+        channel_normal = bot.get_channel(bot.normal_channel_id)
+        channel_ping = bot.get_channel(bot.ping_channel_id)
+        
         bot.loop.create_task(
-            discord_sender(channel, bot.messages_to_send)
+            discord_sender(channel_normal, bot.messages_to_send)
+        )
+        bot.loop.create_task(
+            discord_sender(channel_ping, bot.ping_queue)
         )

@@ -10,8 +10,10 @@ import os
 
 
 class TrackerClient(ArchipelagoClient) :
-    def __init__(self, config: dict[str, any], message_queue: asyncio.Queue, logger: logging.Logger) :
+    def __init__(self, config: dict[str, any], message_queue: asyncio.Queue, ping_queue: asyncio.Queue, logger: logging.Logger) :
         super().__init__(config, logger=logger)
+        # Make sure data directory exists
+        os.makedirs(config["DatabaseConfig"]["data_directory"], exist_ok=True)
         self.tags = set({'TextOnly', 'Tracker', 'DeathLink'})
         self.slot_name : str = config["ArchipelagoConfig"]["bot_slot"]
         self.ap_connection = None
@@ -21,6 +23,7 @@ class TrackerClient(ArchipelagoClient) :
         self.lock = asyncio.Lock() # Lock to protect shared resources
         self.workers_started = False
         self.messages_to_send = message_queue
+        self.ping_queue = ping_queue
         self.datapackage_path = os.path.join(config["DatabaseConfig"]["data_directory"], "datapackage.json")
         self.reversed_datapackage_path = os.path.join(config["DatabaseConfig"]["data_directory"], "reversed_datapackage.json")
     
@@ -28,7 +31,7 @@ class TrackerClient(ArchipelagoClient) :
         while self.running:
             try :
                 message = await self.message_queue.get()
-                self.logger.debug(f"Processing message: {message}")
+                self.logger.info(f"Processing message: {message}")
                 if message["cmd"] == "RoomInfo" :
                     # Check DataPackage and send connect
                     await self.check_data_package()
@@ -68,9 +71,7 @@ class TrackerClient(ArchipelagoClient) :
                     continue
                 await self.messages_to_send.put(data['text'])
         if message["type"] == "ItemSend" :
-            msg_str = ""; flag = None; item_player = Item()
-            msg_summary = []; player_recieving = None; player_sending = None
-            self.logger.debug(f"Processing ItemSend message : {message}")
+            msg_str = ""
             for data in message["data"] :
                 if data["text"].strip() in ["(", ")"] :
                     continue
@@ -78,56 +79,78 @@ class TrackerClient(ArchipelagoClient) :
                     msg_str += data["text"]
                 elif data["type"] == "player_id" :
                     player_slot = int(data["text"])
-                    player_sending = self.player_db.get_player_by_slot(player_slot)
-                    msg_str += f"{player_sending.player_name}"
-                    msg_summary.append(f"{player_sending.player_name}")
-                    item_player.player_sending = player_sending
+                    player = self.player_db.get_player_by_slot(player_slot)
+                    msg_str += f"{player.player_name}"
                 elif data["type"] == "item_id" :
                     item_id = data["text"]
-                    player_recieving = self.player_db.get_player_by_slot(int(data["player"]))
-                    game_receiving = player_recieving.player_game
+                    player = self.player_db.get_player_by_slot(int(data["player"]))
+                    game = player.player_game
                     flag = data["flags"]
                     color = await get_ansi_color_from_flag(flag)
-                    item_name = self.datapackage["data"]["games"][game_receiving]["id_to_item_name"][item_id]
+                    item_name = self.datapackage["data"]["games"][game]["id_to_item_name"][item_id]
                     msg_str += f"\u001b[0;{color}m{item_name}\u001b[0m"
-                    msg_summary.append(item_name)
-                    item_player.item_name = item_name
-                    item_player.item_id = item_id
-                    item_player.game = game_receiving
-                    item_player.flag = flag
                 elif data["type"] == "location_id" :
                     location_id = data["text"]
-                    player_sending = self.player_db.get_player_by_slot(int(data["player"]))
-                    game_sending = player_sending.player_game
-                    location_name = self.datapackage["data"]["games"][game_sending]["id_to_location_name"][location_id]
+                    player = self.player_db.get_player_by_slot(int(data["player"]))
+                    game = player.player_game
+                    location_name = self.datapackage["data"]["games"][game]["id_to_location_name"][location_id]
                     msg_str += f"\nCheck: {location_name}"
-                    msg_summary.append(location_name)
-                    item_player.location_name = location_name
-                    item_player.location_id = location_id
                 else :
                     self.logger.warning(f"Unknown data type : {data['type']}")
-            if player_recieving is None :
-                raise ValueError(f"Player receiving item not found in message : {message}")
-            if player_sending.player_slot != player_recieving.player_slot :
-                self.logger.info(f"Item sent from {player_sending.player_name} added to player {player_recieving.player_name} new items list.")
-                async with self.lock:
-                    player_recieving.new_items.append(item_player)
-            await self.remove_item_from_todolist(item_player)
             msg_str = "```ansi\n"+ msg_str +"\n```"
+            
+            # Now create the item :
+            item_sent = await self.process_item_send(receiving_field = message["receiving"], item_field = message["item"])
+            if not item_sent :
+                self.logger.warning(f"Failed to process item send message, missing field : {message}")
+                return
+            if item_sent.player_sending != item_sent.player_recieving :
+                self.logger.info(f"Item sent from {item_sent.player_sending.player_name} added to player {item_sent.player_recieving.player_name} new items list.")
+                async with self.lock:
+                    item_sent.player_recieving.new_items.append(item_sent)
+            await self.remove_item_from_todolist(item_sent)
             await self.messages_to_send.put(msg_str)
         else :
             self.logger.warning(f"Unknown message type : {message['type']}")
+
+    async def process_item_send(self, receiving_field: str, item_field: dict) -> Item :
+        player_recieving = self.player_db.get_player_by_slot(int(receiving_field))
+        player_sending = self.player_db.get_player_by_slot(int(item_field["player"]))
+        item_id = item_field["item"]
+        location_id = item_field["location"]
+        flag = item_field["flags"]
+        game_receiving = player_recieving.player_game
+        game_sending = player_sending.player_game
+        item_name = self.datapackage["data"]["games"][game_receiving]["id_to_item_name"][str(item_id)]
+        location_name = self.datapackage["data"]["games"][game_sending]["id_to_location_name"][str(location_id)]
+        # if one of the fields is missing, log a warning and return None
+        if None in [player_recieving, player_sending, item_id, location_id, item_name, location_name] :
+            self.logger.warning(f"Missing field in item send message : {receiving_field} {item_field}")
+            return None
+        item = Item(
+            item_name = item_name,
+            item_id = item_id,
+            location_name = location_name,
+            location_id = location_id,
+            player_sending = player_sending,
+            player_recieving = player_recieving,
+            flag = flag
+        )
+        return item
+        
 
     async def remove_item_from_todolist(self, item: Item) -> bool :
         player_sending = self.player_db.get_player_by_name(item.player_sending.player_name)
         for item_todo in player_sending.todolist :
             if item.item_name == item_todo.item_name and item.location_name == item_todo.location_name :
+                self.logger.info(f"Item {item.item_name} found in {item.player_sending.player_name} todolist, removing it.")
                 player_sending.todolist.remove(item_todo)
-                if item.player_recieving.allow_ping :
-                    await self.messages_to_send.put(f"<@{item.player_recieving.discord_id}> The item {item.item_name} you wanted from {item.player_sending.player_name} has been sent!")
+                if item.player_recieving.allow_ping and item.player_recieving.discord_id is not None :
+                    await self.ping_queue.put(f"<@{item.player_recieving.discord_id}> The item {item.item_name} you wanted from {item.player_sending.player_name} has been sent!")
                 else :
-                    await self.messages_to_send.put(f"The item {item.item_name} that {item.player_recieving.player_name} wanted from {item.player_sending.player_name} has been sent!")
+                    await self.ping_queue.put(f"The item {item.item_name} that {item.player_recieving.player_name} wanted from {item.player_sending.player_name} has been sent!")
                 return True
+        self.logger.info(f"Item {item.item_name} not found in {item.player_sending.player_name} todolist, not removed.")
         return False
 
     async def check_data_package(self) -> None :
