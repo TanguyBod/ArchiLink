@@ -1,5 +1,16 @@
 from models.item import Item
 
+PLAYER_COLORS = [
+    "\u001b[30m",
+    "\u001b[31m",
+    "\u001b[32m",
+    "\u001b[33m",
+    "\u001b[34m",
+    "\u001b[35m",
+    "\u001b[36m",
+]
+
+
 class Player:
     def __init__(self, player_slot, player_game, player_name, discord_id=None):
         self.player_slot = player_slot
@@ -9,6 +20,8 @@ class Player:
         self.new_items = []
         self.todolist = []
         self.allow_ping = True
+        self.color = PLAYER_COLORS[int(player_slot) % len(PLAYER_COLORS)]
+        self.name_colored = f"{self.color}{self.player_name}\u001b[0m"
 
     def save(self):
         return {
@@ -28,6 +41,8 @@ class Player:
             player_name=data["player_name"],
             discord_id=data["discord_id"]
         )
+        player.color = PLAYER_COLORS[int(player.player_slot) % len(PLAYER_COLORS)]
+        player.name_colored = f"{player.color}{player.player_name}\u001b[0m"
         player.new_items = [Item.load(item_data) for item_data in data.get("new_items", [])]
         player.todolist = [Item.load(item_data) for item_data in data.get("todolist", [])]
         player.allow_ping = data.get("allow_ping", True)

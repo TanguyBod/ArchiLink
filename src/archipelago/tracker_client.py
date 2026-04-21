@@ -2,6 +2,7 @@ from archipelago.base_client import ArchipelagoClient
 from models.player_db import PlayerDB
 from models.item import Item
 from utils.colors import get_ansi_color_from_flag
+from discord_bot.texts_flavors import get_fulfilled_wish_flavor
 import logging
 import asyncio
 import aiofiles
@@ -80,7 +81,7 @@ class TrackerClient(ArchipelagoClient) :
                 elif data["type"] == "player_id" :
                     player_slot = int(data["text"])
                     player = self.player_db.get_player_by_slot(player_slot)
-                    msg_str += f"{player.player_name}"
+                    msg_str += f"{player.name_colored}"
                 elif data["type"] == "item_id" :
                     item_id = data["text"]
                     player = self.player_db.get_player_by_slot(int(data["player"]))
@@ -145,10 +146,10 @@ class TrackerClient(ArchipelagoClient) :
             if item.item_name == item_todo.item_name and item.location_name == item_todo.location_name :
                 self.logger.info(f"Item {item.item_name} found in {item.player_sending.player_name} todolist, removing it.")
                 player_sending.todolist.remove(item_todo)
-                if item.player_recieving.allow_ping and item.player_recieving.discord_id is not None :
-                    await self.ping_queue.put(f"<@{item.player_recieving.discord_id}> The item {item.item_name} you wanted from {item.player_sending.player_name} has been sent!")
-                else :
-                    await self.ping_queue.put(f"The item {item.item_name} that {item.player_recieving.player_name} wanted from {item.player_sending.player_name} has been sent!")
+                sending_str = item.player_sending.player_name
+                recieving_str = f"<@{item.player_recieving.discord_id}>" if item.player_recieving.allow_ping and item.player_recieving.discord_id is not None else item.player_recieving.player_name
+                msg_flavor = get_fulfilled_wish_flavor(sending_str, recieving_str, item.item_name, item.location_name)
+                await self.messages_to_send.put(msg_flavor)
                 return True
         self.logger.info(f"Item {item.item_name} not found in {item.player_sending.player_name} todolist, not removed.")
         return False

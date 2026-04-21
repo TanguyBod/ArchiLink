@@ -107,14 +107,14 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
             async with bot.tracker_client.lock:
                 items = list(player.new_items)
                 player.new_items.clear()
-            l1 = len(player.player_name) + 2
-            l2 = max(len(item.item_name) for item in items) + 2
-            l3 = max(len(item.player_sending.player_name) for item in items) + 2
-            l4 = max(len(item.location_name) for item in items) + 2
+            l1 = max(len("You"), len(player.player_name)) + 2
+            l2 = max(len("Item"), max(len(item.item_name) for item in items)) + 2
+            l3 = max(len("Sender"), len(item.player_sending.player_name)) + 2
+            l4 = max(len("Location"), len(item.location_name)) + 2
             msg += f"{'You'.ljust(l1)} || {'Item'.ljust(l2)} || {'Sender'.ljust(l3)} || {'Location'.ljust(l4)}\n"
             for item in items :
                 color = await get_ansi_color_from_flag(item.flag)
-                msg += f"{player.player_name.ljust(l1)} || \u001b[0;{color}m{item.item_name.ljust(l2)}\u001b[0m || {item.player_sending.player_name.ljust(l3)} || {item.location_name.ljust(l4)}\n"
+                msg += f"{player.name_colored.ljust(l1)} || \u001b[0;{color}m{item.item_name.ljust(l2)}\u001b[0m || {item.player_sending.name_colored.ljust(l3)} || {item.location_name.ljust(l4)}\n"
                 if len(msg) > 1900 : # Discord message limit is 2000 characters, keep some margin
                     msg += "```"
                     await user.dm_channel.send(msg)
@@ -156,20 +156,15 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
             bot.logger.info(f"Player found : {player.player_name} with {len(player.todolist)} items in todo list.")
             async with bot.tracker_client.lock:
                 items = list(player.todolist)
-            bot.logger.info(f"Items : {items}")
             flavor = get_todolist_flavor()
             msg = f"```ansi\n{flavor}\n\n"
-            bot.logger.info(f"First item : {items[0].__str__()}")
-            l1 = max(len(item.player_recieving.player_name) for item in items) + 2
-            bot.logger.info(f"l1 : {l1}")
-            l2 = max(len(item.item_name) for item in items) + 2
-            bot.logger.info(f"l2 : {l2}")
-            l3 = max(len(item.location_name) for item in items) + 2
-            bot.logger.info(f"l3 : {l3}")
-            msg += f"{'For'.ljust(l1)} || {'Item'.ljust(l2)} || {'Location'.ljust(l3)}\n"
+            l1_tmp = max(max(len(item.player_recieving.player_name) for item in items), len("For")) + 1
+            l1 = max(max(len(item.player_recieving.name_colored) for item in items), len("For")) + 2
+            l2 = max(max(len(item.item_name) for item in items), len("Item")) + 2
+            l3 = max(max(len(item.location_name) for item in items), len("Location")) + 2
+            msg += f"{'For'.ljust(l1_tmp)} || {'Item'.ljust(l2)} || {'Location'.ljust(l3)}\n"
             for item in items :
-                bot.logger.info(f"Item : {item} added")
-                msg += f"{item.player_recieving.player_name.ljust(l1)} || {item.item_name.ljust(l2)} || {item.location_name.ljust(l3)}\n"
+                msg += f"{item.player_recieving.name_colored.ljust(l1)} || {item.item_name.ljust(l2)} || {item.location_name.ljust(l3)}\n"
                 if len(msg) > 1900 : # Discord message limit is 2000 characters, keep some margin
                     msg += "```"
                     await ctx.send(msg)
