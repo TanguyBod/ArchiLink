@@ -119,10 +119,10 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
             async with bot.tracker_client.lock:
                 items = list(player.new_items)
                 player.new_items.clear()
-            l1 = max(len("You"), len(player.player_name)) + 2
-            l2 = max(len("Item"), max(len(item.item_name) for item in items)) + 2
-            l3 = max(len("Sender"), max(len(item.player_sending.player_name) for item in items)) + 2
-            l4 = max(len("Location"), max(len(item.location_name) for item in items)) + 2
+            l1 = max(len("You"), len(player.player_name)) + 1
+            l2 = max(len("Item"), max(len(item.item_name) for item in items)) + 1
+            l3 = max(len("Sender"), max(len(item.player_sending.player_name) for item in items)) + 1
+            l4 = max(len("Location"), max(len(item.location_name) for item in items)) + 1
             msg += f"{'You'.ljust(l1)} || {'Item'.ljust(l2)} || {'Sender'.ljust(l3)} || {'Location'.ljust(l4)}\n"
             for item in items :
                 color = await get_ansi_color_from_flag(item.flag)
@@ -170,14 +170,13 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
                 items = list(player.todolist)
             flavor = get_todolist_flavor()
             msg = f"```ansi\n{flavor}\n\n"
-            l1_tmp = max(max(len(item.player_recieving.player_name) for item in items), len("For")) + 2
-            l1 = max(max(len(item.player_recieving.name_colored) for item in items), len("For")) + 2
-            l2 = max(max(len(item.item_name) for item in items), len("Item")) + 2
-            l3 = max(max(len(item.location_name) for item in items), len("Location")) + 2
-            msg += f"{'For'.ljust(l1_tmp)} || {'Item'.ljust(l2)} || {'Location'.ljust(l3)}\n"
+            l1 = max(max(len(item.player_recieving.player_name) for item in items), len("For")) + 1
+            l2 = max(max(len(item.item_name) for item in items), len("Item")) + 1
+            l3 = max(max(len(item.location_name) for item in items), len("Location")) + 1
+            msg += f"{'For'.ljust(l1)} || {'Item'.ljust(l2)} || {'Location'.ljust(l3)}\n"
             for item in items :
-                msg += f"{item.player_recieving.name_colored.ljust(l1)} || {item.item_name.ljust(l2)} || {item.location_name.ljust(l3)}\n"
-                if len(msg) > 1900 : # Discord message limit is 2000 characters, keep some margin
+                msg += f"{ansi_ljust(item.player_recieving.name_colored, l1)} || {item.item_name.ljust(l2)} || {item.location_name.ljust(l3)}\n"
+                if len(msg) > 1500 : # Discord message limit is 2000 characters, keep some margin
                     msg += "```"
                     await ctx.send(msg)
                     msg = "```ansi\n"
