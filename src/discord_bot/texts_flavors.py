@@ -91,6 +91,29 @@ FULFILLED_WISH_FLAVOR = [
     "{player1} fulfilled {player2}'s request for {item} from {location}. Against all odds (and motivation)."
 ]
 
+WISHLIST_FLAVORS = [
+    "Here’s the list of items you’re currently hoping others will find for you. No pressure, of course.",
+    "Ah yes, the things you’d rather let others deal with. Efficient.",
+    "Here’s everything you’ve politely outsourced to your teammates.",
+    "Behold: your personal wishlist, generously delegated to others.",
+    "Here’s what you’re waiting for others to magically deliver.",
+    "A curated list of problems you’ve decided are someone else’s responsibility.",
+    "Here’s what you’re relying on your teammates for. Bold strategy.",
+    "Ah, the list of items you confidently expect others to handle.",
+    "Here’s your 'I’ll let someone else do it' collection.",
+    "Behold: the items you are absolutely not going out of your way to find.",
+    "Here’s what you’re hoping will just… happen.",
+    "A neat summary of things you expect to receive without lifting a finger.",
+    "Here’s your contribution to teamwork: expectations.",
+    "Ah yes, the famous list of 'someone else will get it'.",
+    "Here’s everything you’ve decided is a group problem now.",
+    "Behold your requests, carefully crafted and entirely someone else’s problem.",
+    "Here’s what you’re waiting on. No rush… for you, at least.",
+    "A fine selection of items you’d love to receive someday.",
+    "Here’s your dependency list. Good luck to everyone else.",
+    "Everything you need, and none of it your responsibility. Impressive."
+]
+
 def get_clear_todolist_flavor() -> str :
     return random.choice(CLEAR_TODOLIST_FLAVOR)
 
@@ -103,3 +126,6 @@ def get_empty_todolist_flavor() -> str :
 def get_fulfilled_wish_flavor(player_sending: str, player_recieving: str, item: str, location: str) -> str :
     flavor = random.choice(FULFILLED_WISH_FLAVOR)
     return flavor.format(player1=player_sending, player2=player_recieving, item=item, location=location)
+
+def get_wishlist_flavor() -> str :
+    return random.choice(WISHLIST_FLAVORS)

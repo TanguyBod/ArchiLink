@@ -1,7 +1,7 @@
 from archipelago.hint_client import HintClient
 from models.button import Button
 from utils.colors import get_ansi_color_from_flag
-from discord_bot.texts_flavors import get_clear_todolist_flavor, get_todolist_flavor, get_empty_todolist_flavor
+from discord_bot.texts_flavors import *
 import asyncio
 import re
 
@@ -214,6 +214,39 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
                 else :
                     player.todolist.remove(item_to_remove)
                     await ctx.send(f"Item {item_name} removed from your todo list.")
+                    
+    @bot.command()
+    async def wishlist(ctx) :
+        discord_id = ctx.author.id
+        player = bot.tracker_client.player_db.get_player_by_discord_id(discord_id)
+        if player is None :
+            await ctx.send(f"You are not registered to any player. Please register first usign `!register <name>` command.")
+        wishlist = []
+        for other_player in bot.tracker_client.player_db.get_all_players():
+            if other_player.player_name == player.player_name :
+                continue
+            async with bot.tracker_client.lock:
+                for item in other_player.todolist:
+                    if item.player_recieving.player_name == player.player_name :
+                        wishlist.append(item)
+        if wishlist == [] :
+            await ctx.send(f"You do not have any item in your wishlist.")
+        else :
+            flavor = get_wishlist_flavor()
+            msg = f"```ansi\n{flavor}\n\n"
+            l1 = max(max(len(item.player_sending.player_name) for item in wishlist), len("From")) + 1
+            l2 = max(max(len(item.item_name) for item in wishlist), len("Item")) + 1
+            l3 = max(max(len(item.location_name) for item in wishlist), len("Location")) + 1
+            msg += f"{'From'.ljust(l1)} || {'Item'.ljust(l2)} || {'Location'.ljust(l3)}\n"
+            for item in wishlist :
+                msg += f"{ansi_ljust(item.player_sending.name_colored, l1)} || {item.item_name.ljust(l2)} || {item.location_name.ljust(l3)}\n"
+                if len(msg) > 1500 : # Discord message limit is 2000 characters, keep some margin
+                    msg += "```"
+                    await ctx.send(msg)
+                    msg = "```ansi\n"
+            msg += "```"
+            await ctx.send(msg)
+                
 
     @bot.command()
     async def help(ctx, command: str = None) :
