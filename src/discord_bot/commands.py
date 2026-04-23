@@ -162,6 +162,8 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
                     await user.dm_channel.send(msg)
                     msg = "```ansi\n"
             msg += "```"
+            if msg == f"```ansi\n```" :
+                return
             await user.dm_channel.send(msg)
             
     @bot.command()
@@ -217,6 +219,8 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
                     await ctx.send(msg)
                     msg = "```ansi\n"
             msg += "```"
+            if msg == f"```ansi\n```" :
+                return
             await ctx.send(msg)
 
         
@@ -287,6 +291,8 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
                     await ctx.send(msg)
                     msg = "```ansi\n"
             msg += "```"
+            if msg == f"```ansi\n```" :
+                return
             await ctx.send(msg)
             
     @bot.command()
