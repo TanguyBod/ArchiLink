@@ -67,6 +67,7 @@ class ArchipelagoClient(ABC) :
                     raw = await self.ap_connection.recv()
                     messages = json.loads(raw)
                     for message in messages:
+                        print(f"Received message: {message}")
                         await self.message_queue.put(message)
             except ConnectionClosedOK:
                 print("Connection closed gracefully.")

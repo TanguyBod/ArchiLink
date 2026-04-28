@@ -1,4 +1,5 @@
 import random
+import time
 
 CLEAR_TODOLIST_FLAVOR = [
     "Your todo list has been cleared. Clearly, the needs of your teammates were… optional.",
@@ -88,7 +89,47 @@ FULFILLED_WISH_FLAVOR = [
     "{player1} retrieved {item} from {location} for {player2}. A task no one else mysteriously volunteered for.",
     "{player1} delivered {item} from {location} to {player2}. The definition of teamwork has been stretched.",
     "{player1} grabbed {item} at {location} for {player2}. Because saying no was apparently not an option.",
-    "{player1} fulfilled {player2}'s request for {item} from {location}. Against all odds (and motivation)."
+    "{player1} fulfilled {player2}'s request for {item} from {location}. Against all odds (and motivation).",
+    "{player1} went to {location} and retrieved {item} for {player2}. Reliable as ever.",
+    "{player1} returned from {location} with {item} for {player2}. Solid teamwork.",
+    "{player1} fetched {item} at {location} for {player2}. Nicely handled.",
+    "{player1} completed {player2}'s request for {item} from {location}. Efficient and effective.",
+    "{player1} went to {location}, got {item}, and delivered it to {player2}. Smooth execution.",
+    "{player1} obtained {item} from {location} for {player2}. Mission accomplished.",
+    "{player1} came through with {item} from {location} for {player2}. Dependable as always.",
+    "{player1} brought back {item} from {location} for {player2}. That’s how it’s done.",
+    "{player1} fulfilled {player2}'s request for {item} from {location}. Clean work.",
+    "{player1} retrieved {item} at {location} for {player2}. Nicely played.",
+    "{player1} secured {item} at {location} for {player2}. Strong contribution.",
+    "{player1} delivered {item} from {location} to {player2}. Teamwork in action.",
+    "{player1} handled the {item} pickup at {location} for {player2}. Well executed.",
+    "{player1} made the trip to {location} and returned with {item} for {player2}. Worth it.",
+    "{player1} completed the task: {item} acquired at {location} for {player2}. Great job.",
+    "{player1} grabbed {item} at {location} for {player2}. Quick and efficient.",
+    "{player1} answered the call and picked up {item} at {location} for {player2}. Nicely done.",
+    "{player1} fulfilled the request for {item} from {location} for {player2}. Strong play.",
+    "{player1} brought {item} from {location} to {player2}. That’s real support.",
+    "{player1} returned with {item} from {location} for {player2}. Always delivering.",
+    "{player1} took care of {item} at {location} for {player2}. Reliable execution.",
+    "{player1} secured {item} from {location} for {player2}. Big help to the team.",
+    "{player1} fetched {item} at {location} for {player2}. Smooth teamwork.",
+    "{player1} completed the errand for {player2}: {item} from {location}. Nicely handled.",
+    "{player1} handled {player2}'s request for {item} at {location}. Clean and efficient.",
+    "{player1} delivered {item} from {location} to {player2}. Strong coordination.",
+    "{player1} picked up {item} at {location} for {player2}. Good call.",
+    "{player1} successfully retrieved {item} from {location} for {player2}. Well played.",
+    "{player1} made the journey to {location} and came back with {item} for {player2}. Clutch move.",
+    "{player1} stepped up and got {item} from {location} for {player2}. Team player.",
+    "{player1} fulfilled {player2}'s wish for {item} from {location}. Nicely executed.",
+    "{player1} brought back {item} from {location} for {player2}. That made a difference.",
+    "{player1} took initiative and secured {item} at {location} for {player2}. Great teamwork.",
+    "{player1} retrieved {item} from {location} for {player2}. Efficient as always.",
+    "{player1} delivered exactly what was needed: {item} from {location} for {player2}.",
+    "{player1} handled the mission: {item} acquired at {location} for {player2}. Success.",
+    "{player1} made sure {player2} got {item} from {location}. Nicely supported.",
+    "{player1} grabbed {item} at {location} for {player2}. Fast and effective.",
+    "{player1} came through again with {item} from {location} for {player2}. Consistent.",
+    "{player1} fulfilled the request for {item} from {location} for {player2}. Great execution."
 ]
 
 WISHLIST_FLAVORS = [
@@ -111,7 +152,65 @@ WISHLIST_FLAVORS = [
     "Here’s what you’re waiting on. No rush… for you, at least.",
     "A fine selection of items you’d love to receive someday.",
     "Here’s your dependency list. Good luck to everyone else.",
-    "Everything you need, and none of it your responsibility. Impressive."
+    "Everything you need, and none of it your responsibility. Impressive.",
+    "Here’s your wishlist — a clear sign you know exactly what you need. Nice.",
+    "A well-thought-out list of priorities. Your team appreciates the clarity.",
+    "Here’s what would help you shine even more. Good call.",
+    "A refined selection of items to boost your progress. Smart thinking.",
+    "Here’s your roadmap to success, neatly outlined.",
+    "You’ve got a clear vision — here’s what will get you there.",
+    "A strong wishlist. Your teammates know exactly how to support you.",
+    "Here’s a solid list of goals. Efficient and to the point.",
+    "A carefully considered set of needs. Nicely done.",
+    "Here’s what will take you to the next level. Looking good.",
+    "A focused wishlist — you’re setting yourself up for success.",
+    "Here’s your game plan. Simple, clear, effective.",
+    "You know what you’re doing — here’s the proof.",
+    "A clean and purposeful list. Your team can work with that.",
+    "Here’s what you need to keep the momentum going.",
+    "A smart selection of items. You’re playing this well.",
+    "Here’s your priority list. Confident choices.",
+    "You’ve made it easy for others to help — that’s good teamwork.",
+    "A sharp wishlist. You’re clearly thinking ahead.",
+    "Here’s what will make a difference for you. Well identified."
+]
+
+DEATHLINK_FLAVOR = [
+    "{dead_player} has fallen.",
+    "{dead_player} has met their end.",
+    "{dead_player} didn't make it.",
+    "{dead_player} has perished.",
+    "{dead_player} is no more.",
+    "{dead_player} has been defeated.",
+    "{dead_player} has died. Stay sharp, everyone.",
+    "{dead_player} has fallen in battle.",
+    "{dead_player} couldn't survive this one.",
+    "{dead_player} has been eliminated.",
+    "{dead_player} has fallen... and you're all coming with them.",
+    "{dead_player} is gone. That’s unfortunate for everyone.",
+    "{dead_player} has died. Hope you were ready.",
+    "{dead_player} bit the dust. Brace yourselves.",
+    "{dead_player} is out. This won’t end well for the rest of you.",
+    "{dead_player} has fallen. Consequences incoming.",
+    "{dead_player} has died. That’s going to hurt.",
+    "{dead_player} died. Impressive, really.",
+    "{dead_player} has perished. Truly a masterclass performance.",
+    "{dead_player} is dead. Didn’t see that coming. (We did.)",
+    "{dead_player} managed to die. Congratulations.",
+    "{dead_player} has fallen. Flawless execution.",
+    "{dead_player} is no more. Outstanding move.",
+    "{dead_player} died. That was definitely intentional.",
+    "{dead_player} has perished. Skill issue?",
+    "{dead_player} is gone. Bold strategy.",
+    "{dead_player} died. Truly one of the plays of all time.",
+    "{dead_player} has died. Maybe try not doing that next time?",
+    "{dead_player} is dead. That seemed avoidable.",
+    "{dead_player} has fallen. You had one job.",
+    "{dead_player} died. We're all very impressed.",
+    "{dead_player} has perished. Stunning lack of survival instinct.",
+    "{dead_player} is no more. A predictable outcome.",
+    "{dead_player} died. Could have gone better.",
+    "{dead_player} has fallen. At least you tried. Sort of.",
 ]
 
 def get_clear_todolist_flavor() -> str :
@@ -129,3 +228,10 @@ def get_fulfilled_wish_flavor(player_sending: str, player_recieving: str, item: 
 
 def get_wishlist_flavor() -> str :
     return random.choice(WISHLIST_FLAVORS)
+
+def get_deathlink_flavor(dead_player: str, death_time: float) -> str :
+    flavor = random.choice(DEATHLINK_FLAVOR)
+    flavor = flavor.format(dead_player=dead_player)
+    time_struct = time.localtime(death_time)
+    time_str = time.strftime("%m/%d %H:%M", time_struct)
+    return f"{time_str} -- {flavor}"

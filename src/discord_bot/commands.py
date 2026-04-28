@@ -193,7 +193,7 @@ Available player names are : {', '.join(bot.tracker_client.player_db.get_all_pla
             await ctx.send(f"This discord bot won't bother you anymore with pings")
             
     @bot.command()
-    async def enableautoitems(ctx) :
+    async def enablenewitems(ctx) :
         if await bad_channel_check(ctx, bot):
             return
         discord_id = ctx.author.id

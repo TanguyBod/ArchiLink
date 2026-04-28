@@ -2,7 +2,7 @@ from archipelago.base_client import ArchipelagoClient
 from models.player_db import PlayerDB
 from models.item import Item
 from utils.colors import get_ansi_color_from_flag
-from discord_bot.texts_flavors import get_fulfilled_wish_flavor
+from discord_bot.texts_flavors import get_fulfilled_wish_flavor, get_deathlink_flavor
 import time
 import logging
 import asyncio
@@ -29,6 +29,7 @@ class TrackerClient(ArchipelagoClient) :
         self.dm_queue = dm_queue
         self.datapackage_path = os.path.join(config["DatabaseConfig"]["data_directory"], "datapackage.json")
         self.reversed_datapackage_path = os.path.join(config["DatabaseConfig"]["data_directory"], "reversed_datapackage.json")
+        self.custom_deathlink_flavor = config["AdvancedConfig"].get("custom_deathlink_flavor", False)
     
     async def process_messages(self):
         while self.running:
@@ -39,7 +40,7 @@ class TrackerClient(ArchipelagoClient) :
                     # Check DataPackage and send connect
                     await self.check_data_package()
                     await self.send_connect()
-                if message["cmd"] == "DataPackage" :
+                elif message["cmd"] == "DataPackage" :
                     # save DataPackage in a json, needed if bot is restarted
                     async with aiofiles.open(self.datapackage_path, "w", encoding="utf-8") as file:
                         await file.write(json.dumps(message, indent=2, ensure_ascii=False))
@@ -48,7 +49,7 @@ class TrackerClient(ArchipelagoClient) :
                     async with aiofiles.open(self.reversed_datapackage_path, "w", encoding="utf-8") as file:
                         await file.write(json.dumps(self.datapackage, indent=2, ensure_ascii=False))
                     self.datapackage_reversed = True
-                if message["cmd"] == "Connected" :
+                elif message["cmd"] == "Connected" :
                     if self.player_db.loaded_from_file :
                         self.logger.info("PlayerDB loaded from file, skipping player creation from RoomInfo message.")
                     else :
@@ -60,11 +61,23 @@ class TrackerClient(ArchipelagoClient) :
                                 continue
                             self.logger.info(f"Creating player {player_name} in slot {player_slot} playing {player_game}.")
                             self.player_db.create_player(player_slot, player_game, player_name)
-                if message["cmd"] == "PrintJSON" :
+                elif message["cmd"] == "PrintJSON" :
                     await self.process_json_message(message)
+                elif message["cmd"] == "Bounced" :
+                    await self.process_bounced_message(message)
             except Exception as e :
                 self.logger.error(f"Error processing message: {e} -->\n {message}")
                 continue
+
+    async def process_bounced_message(self, message: dict) -> None :
+        if message["tags"] == ['Deathlink'] :
+            self.logger.info(f"Processing DeathLink message")
+            dead_player_name = message["data"]['source']
+            death_time = message["data"]['time']
+            death_cause = message["data"]['cause']
+            if self.custom_deathlink_flavor :
+                flavor = get_deathlink_flavor(dead_player_name, death_time)
+            
 
     async def process_json_message(self, message: dict) -> None :
         if message["type"] == "Chat" :
@@ -107,7 +120,9 @@ class TrackerClient(ArchipelagoClient) :
             if not item_sent :
                 self.logger.warning(f"Failed to process item send message, missing field : {message}")
                 return
-            if item_sent.player_sending != item_sent.player_recieving :
+            # Add item to recieving player's new items list if the item is sent from another player and the recieving player is not playing
+            # We assume that if the player is playing, they are aware of the items they received
+            if item_sent.player_sending != item_sent.player_recieving and not item_sent.player_recieving.is_playing :
                 self.logger.info(f"Item sent from {item_sent.player_sending.player_name} added to player {item_sent.player_recieving.player_name} new items list.")
                 async with self.lock:
                     item_sent.player_recieving.new_items.append(item_sent)
