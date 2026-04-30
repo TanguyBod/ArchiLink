@@ -394,6 +394,28 @@ Available player names are : {', '.join(bot.bot_client.player_db.get_all_players
         plt.savefig(buf, format='png')
         buf.seek(0)
         await ctx.send(file=discord.File(buf, filename='global_deaths.png'))
+        
+    @bot.command(name='progressGraph')
+    async def progress_graph(ctx):
+        if await bad_channel_check(ctx, bot):
+            return
+        percentage_dict = {}
+        for player in bot.bot_client.player_db.get_all_players() :
+            if player.total_locations <= 0 :
+                await ctx.send(f"Error retrieving total locations for player {player.player_name}. Cannot compute progress graph.")
+                return
+            percentage = (player.checked_locations / player.total_locations * 100) if player.total_locations > 0 else 0
+            percentage_dict[player.player_name] = percentage
+        plt.figure(figsize=(10,5))
+        plt.bar(percentage_dict.keys(), percentage_dict.values())
+        plt.title('Progress Graph')
+        plt.xlabel('Player')
+        plt.ylabel('Percentage of checked locations')
+        plt.xticks(rotation=45)
+        buf = BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        await ctx.send(file=discord.File(buf, filename='progress_graph.png'))
 
     @bot.command(name='help')
     async def help(ctx, command: str = None) :

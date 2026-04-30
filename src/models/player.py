@@ -27,6 +27,8 @@ class Player:
         self.time_played = 0.0 # seconds
         self.get_new_items_auto = True # TODO: add this in the configuration file
         self.deaths = []
+        self.total_locations = 0
+        self.checked_locations = 0
 
     def save(self):
         return {
@@ -39,7 +41,9 @@ class Player:
             "allow_ping": self.allow_ping,
             "time_played": self.time_played,
             "get_new_items_auto": self.get_new_items_auto,
-            "deaths": self.deaths
+            "deaths": self.deaths,
+            "total_locations": self.total_locations,
+            "checked_locations": self.checked_locations
         }
     
     @staticmethod
@@ -60,4 +64,6 @@ class Player:
         player.is_playing = False
         player.time_joined = 0.0
         player.deaths = data.get("deaths", [])
+        player.total_locations = data.get("total_locations", 0)
+        player.checked_locations = data.get("checked_locations", 0)
         return player
