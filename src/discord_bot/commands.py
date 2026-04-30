@@ -5,6 +5,8 @@ from discord_bot.texts_flavors import *
 import asyncio
 import re
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
 from io import BytesIO
 import discord
 
@@ -408,7 +410,10 @@ Available player names are : {', '.join(bot.bot_client.player_db.get_all_players
             percentage_dict[player.player_name] = percentage
         num_players = len(percentage_dict)
         plt.figure(figsize=(max(10, num_players*0.5), 8))
-        colors = ['red' if pct == 100 else 'blue' for pct in percentage_dict.values()]
+        values = list(percentage_dict.values())
+        norm = mcolors.Normalize(vmin=0, vmax=100)
+        cmap = cm.get_cmap('coolwarm')
+        colors = [cmap(norm(v)) for v in values]
         plt.bar(percentage_dict.keys(), percentage_dict.values(), color=colors)
         plt.title('Progress Graph')
         plt.xlabel('Player')
