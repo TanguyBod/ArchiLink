@@ -406,7 +406,8 @@ Available player names are : {', '.join(bot.bot_client.player_db.get_all_players
                 return
             percentage = (player.checked_locations / player.total_locations * 100) if player.total_locations > 0 else 0
             percentage_dict[player.player_name] = percentage
-        plt.figure(figsize=(10,5))
+        num_players = len(percentage_dict)
+        plt.figure(figsize=(max(10, num_players*0.5), 8))
         plt.bar(percentage_dict.keys(), percentage_dict.values())
         plt.title('Progress Graph')
         plt.xlabel('Player')
