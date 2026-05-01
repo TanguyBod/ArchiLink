@@ -20,21 +20,7 @@ def ansi_ljust(s, width):
 
 async def bad_channel_check(ctx, bot) :
     if ctx.channel is not None and ctx.channel.id != bot.normal_channel_id :
-        await ctx.send("""Cher Monsieur, Chère Madame, nous vous prions de bien vouloir apprendre à lire
-Voilà quelque-chose, mon cher, que vous auriez pu faire,
-Si vous aviez un peu de lettres et d’esprit
-Mais d’esprit, ô le plus lamentable des êtres,
-Vous n’en eûtes jamais un atome, et de lettres
-Vous n’avez que les trois qui forment le mot : sot !
-Eussiez-vous eu d’ailleurs la présence d’esprit qu’il faut,
-Pour pouvoir là, devant ces deux pauvres channels discord,
-vous servir du bon et susnommé « channel à bot »,
-Que vous n’en eussiez pas tapé le quart
-De la moitié du commencement de votre commande, 
-Que nous vous la renvoyons, avec assez de verve,
-Et ne permettons pas qu’une commande entacha ce chanel tout propre. 
-
-Arthur et Tanguy""")
+        await ctx.send("""Please use this command in the normal channel to avoid spamming other channels.\n\If you think this is an error, please contact the administrator.""")
         return True
     return False
 
