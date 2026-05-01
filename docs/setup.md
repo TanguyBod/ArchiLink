@@ -125,7 +125,7 @@ cp config.template.json config.json
 
 Then open `config.json` and fill in all required fields.
 
-See [JSON configuration reference]() for a complete description of each field.
+See [JSON configuration reference](https://github.com/TanguyBod/ArchiLink/blob/main/docs/json.md) for a complete description of each field.
 
 ---
 
