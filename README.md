@@ -9,47 +9,7 @@ Its main features are the following :
 - 🔔 Get notified when your required item is found
 - 🤝 Improve coordination in multiworld sessions
 
-## Setup
 
-Currently only self-hosting is supported but will be hosted in the futur for those that cannot/doesn't want to host it.
-
-### Self-hosting
-
-Before hosting a discord bot for your server, you'll have to create one : [reference to discord bot creation]
-
-#### Clone the project and install dependencies
-
-```bash
-git clone https://github.com/TanguyBod/ArchiLink.git
-```
-
-It is recommended to create a virtual environment before installing the dependencies :
-```bash
-python -m venv ./.venv
-source .venv/bin/activate
-```
-
-Then install dependencies :
-```bash
-pip install -r requirements.txt
-```
-
-#### Configuration file
-
-Once the repo is cloned and dependencies installed, you can copy the json template : 
-```bash
-cp config.template.json config.json
-```
-
-Then open ```config.json``` and fill all fields. See [Insert JSON.md reference] for fields description.
-
-#### Launch the application
-
-Launch the application by running : 
-```bash
-python src/main.py
-```
-Your bot is now setup ! Have fun !
 
 ## Commands
 

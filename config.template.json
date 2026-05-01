@@ -9,7 +9,6 @@
         "app_token" : "",
         "normal_channel_id" : "",
         "ping_channel_id" : "", 
-        "debug_channel_id" : "",
         "command_prefix" : "!",
         "admin_ids" : []
     },
