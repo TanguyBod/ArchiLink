@@ -436,56 +436,152 @@ Available player names are : {', '.join(bot.bot_client.player_db.get_all_players
         buf.seek(0)
         await ctx.send(file=discord.File(buf, filename='progress_graph.png'))
 
+    # Updated `help` Command
+
+
     @bot.command(name='help')
-    async def help(ctx, command: str = None) :
+    async def help(ctx, command: str = None):
         if await bad_channel_check(ctx, bot):
             return
-        if command is None :
-            msg = """**Available commands:**\n
-`!register <player_name>` : Register your discord account to a player. You will receive notifications about this player's items and you can use other commands to see the player's todo list and new items.\n
-`!unregister <Optional : player_name>` : Unregister your discord account from a player. If player_name is not provided, it will unregister from the player you are currently registered to. If player_name is provided, it will unregister from that player if you are registered to it.\n
-`!players` : List all players in the game.\n
-`!hint <hint>` : Send a hint to the tracker. The hint will be processed and you'll be able to add the item to the sender's todo list.\n
-`!new` : Check for new items received since the last time you checked. The items will be sent to you in a DM to avoid spamming the channel.\n
-`!enableping` : Allow the bot to ping you when (i.e. in a todolist) an item you wanted is sent by another player.\n
-`!disableping` : Disallow the bot to ping you when an item you wanted (i.e. in a todolist) is sent by another player.\n
-`!todo` : Show your current todo list.\n
-`!clear_todo` : Clear your current todo list.\n
-`!help <command>` : Show this message or, if a command is provided, show detailed information about that command.
-"""
+
+        commands_help = {
+            "register": {
+                "usage": "`!register <player_name>`",
+                "description": "Register your Discord account to a player.",
+                "details": (
+                    "You will receive notifications about this player's items and gain access "
+                    "to player-specific commands such as `!todo`, `!wishlist`, and `!new`.\n\n"
+                    "Example: `!register Alice`"
+                )
+            },
+            "unregister": {
+                "usage": "`!unregister [player_name]`",
+                "description": "Unregister your Discord account from a player.",
+                "details": (
+                    "If no player name is provided, you will be unregistered from your current player.\n\n"
+                    "Examples:\n"
+                    "`!unregister`\n"
+                    "`!unregister Alice`"
+                )
+            },
+            "players": {
+                "usage": "`!players`",
+                "description": "Display all players in the multiworld.",
+                "details": "Useful to verify the exact spelling of player names."
+            },
+            "hint": {
+                "usage": "`!hint <text>`",
+                "description": "Send a hint query to the tracker.",
+                "details": (
+                    "Recognized hints may provide buttons to add items to todo lists.\n\n"
+                    "Example: `!hint City Crest`"
+                )
+            },
+            "new": {
+                "usage": "`!new`",
+                "description": "Check newly received items.",
+                "details": "New items are sent through DM to avoid channel spam."
+            },
+            "enableping": {
+                "usage": "`!enableping`",
+                "description": "Allow the bot to ping you.",
+                "details": "You may be pinged when another player finds an item relevant to your todo list."
+            },
+            "disableping": {
+                "usage": "`!disableping`",
+                "description": "Disable bot pings.",
+                "details": "The bot won't ping you anymore."
+            },
+            "enablenewitems": {
+                "usage": "`!enablenewitems`",
+                "description": "Enable automatic DM notifications for new items.",
+                "details": "You will automatically receive newly collected items in DM when connecting your game."
+            },
+            "disablenewitems": {
+                "usage": "`!disablenewitems`",
+                "description": "Disable automatic DM notifications for new items.",
+                "details": "You will need to use `!new` manually to check for received items."
+            },
+            "todo": {
+                "usage": "`!todo`",
+                "description": "Show your todo list.",
+                "details": "Displays all tracked items you still need to collect or verify."
+            },
+            "cleartodo": {
+                "usage": "`!clearTodo`",
+                "description": "Clear your todo list.",
+                "details": "Removes every item from your current todo list."
+            },
+            "removetodo": {
+                "usage": "`!removeTodo <item_name>`",
+                "description": "Remove a specific item from your todo list.",
+                "details": "Example: `!removeTodo Hookshot`"
+            },
+            "wishlist": {
+                "usage": "`!wishlist`",
+                "description": "Display items other players have marked for you.",
+                "details": "Shows all wishlist items targeting your player."
+            },
+            "wastedonarchipelago": {
+                "usage": "`!wastedOnArchipelago`",
+                "description": "Display your total playtime.",
+                "details": "Shows the total time spent in the multiworld session."
+            },
+            "deaths": {
+                "usage": "`!deaths`",
+                "description": "Display your total death count.",
+                "details": "Shows how many times you died during the session."
+            },
+            "deathgraph": {
+                "usage": "`!deathgraph`",
+                "description": "Generate a graph of your deaths over time.",
+                "details": "Displays cumulative deaths based on playtime progression."
+            },
+            "globaldeaths": {
+                "usage": "`!globaldeaths`",
+                "description": "Display total deaths for all players.",
+                "details": "Generates a comparison graph between all players."
+            },
+            "progressgraph": {
+                "usage": "`!progressGraph`",
+                "description": "Generate a progression graph for all players.",
+                "details": "Shows completion percentages and checked locations for every player."
+            },
+            "help": {
+                "usage": "`!help [command]`",
+                "description": "Display help information.",
+                "details": "Use without arguments to list all commands or specify a command for detailed help."
+            }
+        }
+
+        if command is None:
+            msg = "**Available commands:**\n\n"
+
+            for cmd_name, data in commands_help.items():
+                msg += f"{data['usage']} : {data['description']}\n"
+
+            msg += "\nUse `!help <command>` for detailed information about a specific command."
             await ctx.send(msg)
-        else :
-            command = command.lower()
-            if command == "register" :
-                msg = """`!register <player_name>` : Register your discord account to a player. You will receive notifications about this player's items and you can use other commands to see the player's todo list and new items.\n
-Example : `!register Alice` will register you to the player named Alice. You can only be registered to one player at a time. If you want to register to another player, you need to unregister first using `!unregister` command."""
-            elif command == "unregister" :
-                msg = """`!unregister <Optional : player_name>` : Unregister your discord account from a player. If player_name is not provided, it will unregister from the player you are currently registered to. If player_name is provided, it will unregister from that player if you are registered to it.\n
-Example : `!unregister` will unregister you from the player you are currently registered to. `!unregister Alice` will unregister you from the player named Alice if you are registered to it."""
-            elif command == "players" :
-                msg = """`!players` : List all players in the game.\n
-Example : `!players` will list all players in the game. This command is useful to know the exact spelling of the player names to use them in other commands."""
-            elif command == "hint" :
-                msg = """`!hint <hint>` : Send a hint to the tracker. The hint will be processed and you'll be able to add the item to the sender's todo list.\n
-Example : `!hint I found a red chest in the forest` will send the hint "I found a red chest in the forest" to the tracker. If the hint is recognized as an item, you will receive a message with the item name and a button to add it to the sender's todo list."""
-            elif command == "new" :
-                msg = """`!new` : Check for new items received since the last time you checked. The items will be sent to you in a DM to avoid spamming the channel.\n
-Example : `!new` will check for new items received since the last time you checked and send them to you in a DM."""
-            elif command == "enableping" :
-                msg = """`!enableping` : Allow the bot to ping you when (i.e. in a todolist) an item you wanted is sent by another player.\n
-Example : `!enableping` will allow the bot to ping you when an item you wanted is sent by another player."""
-            elif command == "disableping" :
-                msg = """`!disableping` : Disallow the bot to ping you when an item you wanted (i.e. in a todolist) is sent by another player.\n
-Example : `!disableping` will disallow the bot to ping you when an item you wanted is sent by another player."""
-            elif command == "todo" :
-                msg = """`!todo` : Show your current todo list.\n
-Example : `!todo` will show your current todo list. The todo list contains items that you wanted and that other players have sent to you. If the todo list is empty, it will show a message saying that your todo list is empty."""
-            elif command == "clear_todo" :
-                msg = """`!clear_todo` : Clear your current todo list.\n
-Example : `!clear_todo` will clear your current todo list. Use this command when you have received the items in your todo list and want to clear it."""
-            else :
-                msg = f"Command {command} not found. Use `!help` command to see the list of available commands."
-            await ctx.send(msg)
+            return
+
+        command = command.lower()
+
+        if command not in commands_help:
+            await ctx.send(
+                f"Command `{command}` not found. Use `!help` to see all available commands."
+            )
+            return
+
+        data = commands_help[command]
+
+        msg = (
+            f"**{data['usage']}**\n\n"
+            f"{data['description']}\n\n"
+            f"{data['details']}"
+        )
+
+        await ctx.send(msg)
+
             
             
     
