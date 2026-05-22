@@ -1,6 +1,5 @@
 import json
 import os
-import aiofiles
 from models.player import Player
 
 class PlayerDB :

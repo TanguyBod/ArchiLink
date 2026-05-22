@@ -1,6 +1,90 @@
+import asyncio
+
 import discord
 import json
+        
+STEPS = [
+    "ArchipelagoConfig",
+    "DiscordConfig",
+    "DatabaseConfig",
+    "AdvancedConfig"
+]
+        
+class EntryView(discord.ui.View):
+    
+    # Two buttons, one for manual configuration and one for importing from file
 
+    # Manual configuration button opens the ConfigWizardView
+    @discord.ui.button(label="Manual Configuration", style=discord.ButtonStyle.primary)
+    async def manual(self, interaction: discord.Interaction, button: discord.ui.Button):
+        view = ConfigWizardView()
+        step_name = STEPS[0]
+        embed = discord.Embed(
+            title="⚙️ Configuration Wizard",
+            description=f"Starting at {step_name}"
+        )
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        
+    # Import from file button (Ask user to upload a JSON file, then parse it and create multiworld instance)
+    @discord.ui.button(label="Import from File", style=discord.ButtonStyle.secondary)
+    async def import_file(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "Please upload a JSON configuration file within 5 minutes.",
+            ephemeral=True
+        )
+
+        def check(message: discord.Message):
+            return (
+                message.author.id == interaction.user.id
+                and message.channel.id == interaction.channel.id
+                and len(message.attachments) > 0
+            )
+
+        try:
+            # Attend uniquement le PREMIER message valide
+            message = await interaction.client.wait_for(
+                "message",
+                check=check,
+                timeout=300
+            )
+
+            attachment = message.attachments[0]
+
+            # Vérifie extension
+            if not attachment.filename.endswith(".json"):
+                await interaction.followup.send(
+                    "The uploaded file must be a JSON file.",
+                    ephemeral=True
+                )
+                return
+
+            # Lecture du contenu
+            file_bytes = await attachment.read()
+
+            try:
+                data = json.loads(file_bytes.decode("utf-8"))
+            except json.JSONDecodeError:
+                await interaction.followup.send(
+                    "Invalid JSON file.",
+                    ephemeral=True
+                )
+                return
+
+            # Ici tu peux créer ton instance multiworld
+            print(data)
+
+            await interaction.followup.send(
+                "Configuration imported successfully.",
+                ephemeral=True
+            )
+
+        except asyncio.TimeoutError:
+            await interaction.followup.send(
+                "Timeout: no file received within 5 minutes.",
+                ephemeral=True
+            )
+            
 class ConfigWizardState:
     def __init__(self):
         self.data = {
@@ -11,13 +95,6 @@ class ConfigWizardState:
         }
 
         self.step = 0
-        
-STEPS = [
-    "ArchipelagoConfig",
-    "DiscordConfig",
-    "DatabaseConfig",
-    "AdvancedConfig"
-]
 
 class ConfigWizardView(discord.ui.View):
 
@@ -25,7 +102,7 @@ class ConfigWizardView(discord.ui.View):
         super().__init__(timeout=600)
         self.state = ConfigWizardState()
 
-    # 📌 Affichage dynamique
+    # Dynamic message update based on current step
     async def update_message(self, interaction: discord.Interaction):
 
         step_name = STEPS[self.state.step]
@@ -44,7 +121,7 @@ class ConfigWizardView(discord.ui.View):
 
         await interaction.response.edit_message(embed=embed, view=self)
 
-    # ◀ BACK
+    # Back button
     @discord.ui.button(label="◀", style=discord.ButtonStyle.secondary)
     async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
@@ -53,7 +130,7 @@ class ConfigWizardView(discord.ui.View):
 
         await self.update_message(interaction)
 
-    # ▶ NEXT
+    # Next button
     @discord.ui.button(label="▶", style=discord.ButtonStyle.primary)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
 
@@ -62,7 +139,7 @@ class ConfigWizardView(discord.ui.View):
 
         await self.update_message(interaction)
 
-    # ✏️ EDIT CURRENT STEP
+    # Edit button opens modal for current step
     @discord.ui.button(label="Edit", style=discord.ButtonStyle.green)
     async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
 
@@ -77,33 +154,15 @@ class ConfigWizardView(discord.ui.View):
 
         await interaction.response.send_modal(modals[step](self.state))
 
-    # 💾 EXPORT FINAL JSON
-    @discord.ui.button(label="Export", style=discord.ButtonStyle.success)
+    # Export button save current config and create multiworld instance
+    @discord.ui.button(label="Save config", style=discord.ButtonStyle.success)
     async def export(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        import json
 
         await interaction.response.send_message(
             f"```json\n{json.dumps(self.state.data, indent=4)}\n```",
             ephemeral=True
         )
-        
-class EntryView(discord.ui.View):
 
-    @discord.ui.button(label="Manual Configuration", style=discord.ButtonStyle.primary)
-    async def manual(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        view = ConfigWizardView()
-
-        step_name = STEPS[0]
-
-        embed = discord.Embed(
-            title="⚙️ Configuration Wizard",
-            description=f"Starting at {step_name}"
-        )
-
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
-        
 class ArchipelagoModal(discord.ui.Modal, title="Archipelago Config"):
 
     def __init__(self, state):
