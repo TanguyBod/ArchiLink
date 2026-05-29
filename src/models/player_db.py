@@ -20,11 +20,12 @@ class PlayerDB :
                       player_slot : int, 
                       player_game : str, 
                       player_name : str, 
+                      color_restricted : bool = False,
                       discord_id : int = None
                     ) -> Player :
         if player_slot in self.players_by_slot:
             raise ValueError(f"Player slot {player_slot} already exists.")
-        player = Player(int(player_slot), player_game, player_name, discord_id)
+        player = Player(int(player_slot), player_game, player_name, discord_id, color_restricted=color_restricted)
         self.players_by_slot[player_slot] = player
         self.players_by_name[player_name] = player
         if discord_id is not None:

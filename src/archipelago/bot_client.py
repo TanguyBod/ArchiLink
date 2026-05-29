@@ -64,7 +64,7 @@ class BotClient(ArchipelagoClient) :
                             if player_game == "Archipelago" :
                                 continue
                             self.logger.info(f"Creating player {player_name} in slot {player_slot} playing {player_game}.")
-                            self.player_db.create_player(player_slot, player_game, player_name)
+                            self.player_db.create_player(player_slot, player_game, player_name, color_restricted = self.config["AdvancedConfig"].get("player_colors_limited", False))
                 elif message["cmd"] == "PrintJSON" :
                     await self.process_json_message(message)
                 elif message["cmd"] == "Bounced" :

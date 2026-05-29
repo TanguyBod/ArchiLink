@@ -314,14 +314,22 @@ class AdvancedModal(discord.ui.Modal, title="Advanced Config"):
             default="true"
         )
         
+        self.player_colors_limited = discord.ui.TextInput(
+            label="Use the same colors for players as for items (true/false)",
+            placeholder="true/false",
+            required=True,
+            default="false"
+        )
+                
         self.add_item(self.custom_deathlink_flavor)
         self.add_item(self.auto_ping_new_items)
-
+        self.add_item(self.player_colors_limited)
     async def on_submit(self, interaction: discord.Interaction):
 
         self.state.data["AdvancedConfig"] = {
             "custom_deathlink_flavor": self.custom_deathlink_flavor.value.lower() == "true",
-            "auto_ping_new_items": self.auto_ping_new_items.value.lower() != "false"
+            "auto_ping_new_items": self.auto_ping_new_items.value.lower() != "false",
+            "player_colors_limited": self.player_colors_limited.value.lower() == "true"
         }
         
         await self.view.update_message(interaction)

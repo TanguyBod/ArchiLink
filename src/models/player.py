@@ -10,9 +10,15 @@ PLAYER_COLORS = [
     "\u001b[36m",
 ]
 
+RESTRICTED_COLORS = [
+    "\u001b[30m",
+    "\u001b[32m",
+    "\u001b[35m",
+    "\u001b[36m",
+]
 
 class Player:
-    def __init__(self, player_slot, player_game, player_name, discord_id=None):
+    def __init__(self, player_slot, player_game, player_name, discord_id=None, color_restricted=False):
         self.player_slot = player_slot
         self.player_game = player_game
         self.player_name = player_name
@@ -20,7 +26,10 @@ class Player:
         self.new_items = []
         self.todolist = []
         self.allow_ping = True
-        self.color = PLAYER_COLORS[int(player_slot) % len(PLAYER_COLORS)]
+        if color_restricted:
+            self.color = RESTRICTED_COLORS[int(player_slot) % len(RESTRICTED_COLORS)]
+        else:
+            self.color = PLAYER_COLORS[int(player_slot) % len(PLAYER_COLORS)]
         self.name_colored = f"{self.color}{self.player_name}\u001b[0m"
         self.is_playing = False
         self.time_joined = 0.0

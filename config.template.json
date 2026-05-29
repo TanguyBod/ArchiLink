@@ -13,6 +13,7 @@
     },
     "AdvancedConfig": {
         "custom_deathlink_flavor" : false,
-        "auto_ping_new_items" : true
+        "auto_ping_new_items" : true,
+        "player_colors_limited" : false
     }
 }
