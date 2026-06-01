@@ -103,7 +103,7 @@ Please delete the existing world before creating a new one or use a different no
         await ctx.send(f"There are {len(channel_link_list)} worlds on this server on the following channels:\n{chr(10).join(channel_link_list)}")
 
     @bot.command(name="isAdmin", help="Check if a user is an admin. Usage: !isAdmin")
-    async def is_admin(ctx):
+    async def isadmin(ctx):
         session = bot.world_manager.get_world_from_channel(ctx.channel.id)
         if session is None:
             await ctx.send("No world is associated with this channel.")
