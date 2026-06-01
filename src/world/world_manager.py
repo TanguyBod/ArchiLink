@@ -29,7 +29,11 @@ class WorldManager:
             for session in self.worlds.values():
                 if session.normal_channel_id == normal_channel_id:
                     return "already_exists"
-            ping_channel_id = int(config["DiscordConfig"].get("ping_channel_id", normal_channel_id))
+            ping_channel_id = config["DiscordConfig"].get("ping_channel_id")
+            if ping_channel_id is None:
+                ping_channel_id = normal_channel_id
+            else:
+                ping_channel_id = int(ping_channel_id)
 
             bot_client = BotClient(
                 config = config,
