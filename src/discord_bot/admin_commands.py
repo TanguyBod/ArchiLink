@@ -9,7 +9,7 @@ async def is_admin(ctx, session):
     admin_ids = session.admin_ids
     if admin_ids == [] :
         return True # If no admin ids are specified, allow everyone to use admin commands
-    return str(ctx.author.id) in session.admin_ids
+    return ctx.author.id in session.admin_ids
 
 def setup_admin_commands(bot) :
     
