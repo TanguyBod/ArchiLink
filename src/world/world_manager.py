@@ -54,8 +54,8 @@ class WorldManager:
             await session.start()
             session.tasks.append(asyncio.create_task(bot_client.run()))
             self.worlds[world_id] = session
-            guild = self.bot.get_channel(normal_channel_id).guild
-            channel = self.bot.get_channel(normal_channel_id)
+            channel = await self.bot.fetch_channel(normal_channel_id)
+            guild = channel.guild
             return f"https://discord.com/channels/{guild.id}/{channel.id}"
         except Exception as e:
             self.logger.error(f"Error while creating world {world_data_dir}: {e}")
