@@ -278,7 +278,6 @@ class DiscordConfigModal(discord.ui.Modal, title="Discord Config"):
         self.admin_ids = discord.ui.TextInput(
             label="Admin IDs (comma separated)",
             placeholder="Enter the IDs of the admins, separated by commas (optional)",
-            default=",".join(state.data.get("DiscordConfig", {}).get("admin_ids", [])),
             required=False
         )
         

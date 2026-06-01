@@ -24,7 +24,7 @@ class WorldManager:
             world_logger = self.logger.getChild(world_id)
             admin_ids = config["DiscordConfig"].get("admin_ids", [])
             # Make sure all admin ids are integers
-            admin_ids = [int(admin_id) for admin_id in admin_ids]
+            admin_ids = [int(admin_id) for admin_id in admin_ids] if admin_ids != [] else []
             normal_channel_id = int(config["DiscordConfig"]["normal_channel_id"])
             for session in self.worlds.values():
                 if session.normal_channel_id == normal_channel_id:
