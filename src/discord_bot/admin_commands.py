@@ -20,7 +20,7 @@ def setup_admin_commands(bot) :
             bot.custom_logger.warning(f"Received message from channel {ctx.channel.id} but no world is associated to this channel.")
             await ctx.send("An error occurred while processing the command. Please try again later.")
             return
-        if not await is_admin(ctx, session):
+        if not await is_admin(ctx):
             await ctx.send("You don't have permission to use this command.")
             return
         await ctx.send("Computing checks for all players. This may take a while...")
@@ -76,7 +76,7 @@ Please delete the existing world before creating a new one or use a different no
             bot.custom_logger.warning(f"Received message from channel {ctx.channel.id} but no world is associated to this channel.")
             await ctx.send("No world is associated with this channel.")
             return
-        if not await is_admin(ctx, session):
+        if not await is_admin(ctx):
             await ctx.send("You don't have permission to use this command. Only the world admins can delete the world.")
             return
         try:
