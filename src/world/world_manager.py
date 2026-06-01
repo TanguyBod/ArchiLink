@@ -1,6 +1,8 @@
 import asyncio
 import os
 import json
+
+import discord
 from archipelago.bot_client import BotClient
 from discord_bot import bot
 from discord_bot.commands import send_new_items
@@ -57,6 +59,8 @@ class WorldManager:
             channel = await self.bot.fetch_channel(normal_channel_id)
             guild = channel.guild
             return f"https://discord.com/channels/{guild.id}/{channel.id}"
+        except discord.NotFound or discord.Forbidden:
+            await self.delete_world(world_id)
         except Exception as e:
             self.logger.error(f"Error while creating world {world_data_dir}: {e}")
     
