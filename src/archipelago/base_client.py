@@ -27,6 +27,7 @@ class ArchipelagoClient(ABC) :
         self.game = ''
         self.worker_tasks = []
         self.logger = logger
+        self.failed_connection_attempts = 0
     
     async def connect(self) :
         if self.self_hosted :
@@ -88,14 +89,28 @@ class ArchipelagoClient(ABC) :
             except Exception as e:
                 self.logger.error(f"Connection error: {e}")
                 await asyncio.sleep(60)  # Wait before trying to reconnect
-                
+                self.failed_connection_attempts += 1
+                # If more than 5 failed connection attempts and not self-hosted, stop trying to reconnect
+                # This is to prevent infinite reconnection attempts if the server is down or the URL is incorrect
+                if self.failed_connection_attempts >= 5:
+                    if not self.self_hosted:
+                        self.logger.error("Too many failed connection attempts. Stopping reconnection attempts.")
+                        await self.stop()
+        self.logger.info("Archipelago tracker stopped on endpoint " + self.client_url + ":" + self.client_port)
+
     async def stop(self) :
+        self.logger.info("Stopping Archipelago tracking on endpoint " + self.client_url + ":" + self.client_port)
         self.running = False
         for task in getattr(self, "worker_tasks", []):
             task.cancel()
         await asyncio.gather(*self.worker_tasks, return_exceptions=True)
         if self.ap_connection:
             await self.ap_connection.close()
+            
+    async def start(self) :
+        self.logger.info("Starting Archipelago tracking on endpoint " + self.client_url + ":" + self.client_port)
+        self.running = True
+        await self.run()
     
     @abstractmethod
     async def process_messages(self) :

@@ -72,7 +72,8 @@ class BotClient(ArchipelagoClient) :
             except Exception as e :
                 self.logger.error(f"Error processing message: {e} -->\n {message}")
                 continue
-
+        self.messages_to_send.put("Tracking stopped, no longer processing messages. If you want to start tracking again, please do !activate in the discord channel.")
+        
     async def process_bounced_message(self, message: dict) -> None :
         if message["tags"] == ['DeathLink'] :
             self.logger.debug(f"Processing DeathLink message")

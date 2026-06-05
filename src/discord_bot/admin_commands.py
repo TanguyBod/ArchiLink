@@ -112,3 +112,39 @@ Please delete the existing world before creating a new one or use a different no
             await ctx.send("You are an admin.")
         else :
             await ctx.send("You are not an admin.")
+            
+    @bot.command(name="deactivate", help="Deactivate the bot and stop tracking this world. Usage: !deactivate")
+    async def deactivate(ctx):
+        session = bot.world_manager.get_world_from_channel(ctx.channel.id)
+        if session is None:
+            await ctx.send("No world is associated with this channel.")
+            return
+        if not await is_admin(ctx, session):
+            await ctx.send("You don't have permission to use this command. Only the world admins can deactivate the bot.")
+            return
+        try:
+            await session.bot_client.stop()
+            await ctx.send("Bot deactivated. Tracking stopped for this world. To activate again, please use !activate.")
+        except Exception as e:
+            bot.custom_logger.error(f"Error deactivating bot: {e}")
+            await ctx.send(f"An error occurred while deactivating the bot. Please try again later.")
+            
+    @bot.command(name="activate", help="Activate the bot and start tracking this world. Usage: !activate")
+    async def activate(ctx):
+        session = bot.world_manager.get_world_from_channel(ctx.channel.id)
+        if session is None:
+            await ctx.send("No world is associated with this channel.")
+            return
+        if not await is_admin(ctx, session):
+            await ctx.send("You don't have permission to use this command. Only the world admins can activate the bot.")
+            return
+        try:
+            if session.bot_client.running:
+                await ctx.send("Bot is already active and tracking this world.")
+                return
+            session.tasks.append(asyncio.create_task(session.bot_client.start()))
+            asyncio.create_task(session.bot_client.run())
+            await ctx.send("Bot activated. Tracking started for this world.")
+        except Exception as e:
+            bot.custom_logger.error(f"Error activating bot: {e}")
+            await ctx.send(f"An error occurred while activating the bot. Please try again later.")
