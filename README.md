@@ -83,6 +83,8 @@ Once a world is instanciated, you can interact with it with these commands :
 
 Admin commands (available for everyone if no admin specified) :
 
+| Command | Description |
+|--------|------------|
 | `!isAdmin` | Tell wether you're an admin or not. |
 | `!computeChecks` | Compute total number of checks for every players (use this before printing the progress graph the first time). Beware, the bot will connect to the multiworld for every player to retrieve checks, this might cause some lags. |
 | `!deleteWorld` | Delete the world associated to the current channel (the bot will no longer track progress). |
