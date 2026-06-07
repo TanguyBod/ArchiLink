@@ -128,6 +128,20 @@ class WorldManager:
         else:
             return "config_not_found"
         
+    async def autosave_all_worlds(self):
+        try :
+            while True:
+                await asyncio.sleep(900)  # Save every 15 minutes
+                for world_id, session in self.worlds.items():
+                    self.logger.info(f"Autosaving world {world_id}")
+                    await session.bot_client.save_state()
+        except asyncio.CancelledError:
+            self.logger.info("Autosave task stopped")
+            for world_id, session in self.worlds.items():
+                self.logger.info(f"Autosaving world {world_id}")
+                await session.bot_client.save_state()
+            raise
+        
 class WorldSession:
     def __init__(
         self,

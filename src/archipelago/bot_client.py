@@ -56,7 +56,23 @@ class BotClient(ArchipelagoClient) :
                     self.datapackage_reversed = True
                 elif message["cmd"] == "Connected" :
                     if self.player_db.loaded_from_file :
-                        self.logger.info("PlayerDB loaded from file, skipping player creation from RoomInfo message.")
+                        self.logger.info("PlayerDB loaded from file, checking if players need to be updated.")
+                        for slot, slot_info in message["slot_info"].items() :
+                            player_slot = int(slot)
+                            player_game = slot_info["game"]
+                            player_name = slot_info["name"]
+                            if player_game == "Archipelago" :
+                                continue
+                            player = self.player_db.get_player_by_slot(player_slot)
+                            if player is None :
+                                self.logger.info(f"Player in slot {player_slot} not found in player_db, creating new player {player_name} playing {player_game}.")
+                                self.player_db.create_player(player_slot, player_game, player_name, color_restricted = self.config["AdvancedConfig"].get("player_colors_limited", False))
+                            else :
+                                if player.player_name != player_name or player.player_game != player_game :
+                                    self.logger.info(f"Player in slot {player_slot} has updated info, updating player {player_name} playing {player_game}.")
+                                    # Update player's name and game
+                                    player.player_name = player_name
+                                    player.player_game = player_game
                     else :
                         for slot, slot_info in message["slot_info"].items() :
                             player_slot = int(slot)

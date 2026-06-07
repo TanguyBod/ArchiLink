@@ -38,6 +38,44 @@ def setup_admin_commands(bot) :
             bot.custom_logger.error(f"Error computing checks: {e}")
             await ctx.send(f"An error occurred while computing checks. Please try again later.")
             
+    @bot.command(name="fastConfig", help="Quickly create a world with a default configuration. Usage: !fastConfig <ip_adress> <port> <password>")
+    async def fast_config(ctx, ip_address, port, password=None):
+        data = {
+            "ArchipelagoConfig": {
+                "client_url" : f"{ip_address}",
+                "client_port" : f"{port}",
+                "password" : password,
+                "bot_slot" : "ArchiLink",
+                "self_hosted" : "archipelago.gg" not in ip_address
+            },
+            "DiscordConfig": {
+                "normal_channel_id" : f"{ctx.channel.id}",
+                "ping_channel_id" : f"{ctx.channel.id}", 
+                "admin_ids" : [ctx.author.id]
+            },
+            "AdvancedConfig": {
+                "custom_deathlink_flavor" : False,
+                "auto_ping_new_items" : True,
+                "player_colors_limited" : False
+            }
+        }
+        datadir = os.getenv("DATA_DIRECTORY", "data")
+        # Create a unique world ID 
+        dt = discord.utils.utcnow()
+        world_id = f"{ctx.author.id}_{int(discord.utils.time_snowflake(dt))}"
+        world_data_dir = os.path.join(datadir, world_id)
+        os.makedirs(world_data_dir, exist_ok=True)
+        try:
+            msg = await bot.world_manager.create_world(world_data_dir, data)
+            if msg == "already_exists":
+                await ctx.send("A world is already associated with this channel.\n\
+Please delete the existing world before creating a new one or use a different normal channel in the configuration.")
+                return
+            await ctx.send(f"World created with fast configuration. You can now use the commands to interact with your world in {msg}.")
+        except Exception as e:
+            bot.custom_logger.error(f"Error creating world with fast configuration: {e}")
+            await ctx.send(f"An error occurred while creating the world with fast configuration. Please try again later.")
+            
     @bot.command(name="newWorld", help="Create a new world. Usage: !newWorld")
     async def new_world(ctx):
         data = {}

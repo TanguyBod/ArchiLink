@@ -21,12 +21,21 @@ async def main():
     discord_bot.world_manager = world_manager # Give the bot a reference to the world manager so it can route messages to the correct world based on the channel they come from
     
     try :
-        await asyncio.gather(
-            asyncio.create_task(discord_bot.start(os.getenv("DISCORD_APP_TOKEN")))
-        )
+        tasks = [
+            asyncio.create_task(discord_bot.start(os.getenv("DISCORD_APP_TOKEN"))),
+            asyncio.create_task(world_manager.autosave_all_worlds())
+        ]
+        await asyncio.gather(*tasks)
     
     finally :
         logger.info("Shutting down, stopping all worlds...")
+        # Close auto-save task
+        if tasks[1] :
+            tasks[1].cancel()
+            try:
+                await tasks[1]
+            except asyncio.CancelledError:
+                pass
         await world_manager.stop_all_worlds()
         await discord_bot.close()
         
