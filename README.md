@@ -52,6 +52,7 @@ Here is the list of commands to manage worlds :
 |--------|------------|
 | `!newWorld` | Initializes the bot to follow an Archipelago multiworld. Two way to configure the world are available : manual configuration or
 uploading a config.json file. This command can be used anywhere. |
+|`!fastConfig <ip> <port> <password (optionnal)>`| Quickly create a new multiworld with default configuration. |
 | `!deleteWorld` | Delete the world associated to the current channel (the bot will no longer track progress). This command can only be used by admins to prevent griefing. |
 
 Once a world is instanciated, you can interact with it with these commands :
@@ -86,4 +87,7 @@ Admin commands (available for everyone if no admin specified) :
 | `!computeChecks` | Compute total number of checks for every players (use this before printing the progress graph the first time). Beware, the bot will connect to the multiworld for every player to retrieve checks, this might cause some lags. |
 | `!deleteWorld` | Delete the world associated to the current channel (the bot will no longer track progress). |
 | `!listWorlds` | Display total number of worlds tracked in this server and associated channels. |
+| `!deactivate` | Stop the bot from tracking the world associated with the current channel. |
+| `!activate` | Restart tracking of the world from the bot after a connection issue (for example archipelago.gg inactivity) |
+
 

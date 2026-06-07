@@ -553,6 +553,9 @@ You are currently registered to : {', '.join([p.player_name for p in discord_pro
                 "`!deleteWorld` - Delete the multiworld associated with the current channel.\n"
                 "This command stops the bot from tracking the multiworld in this channel and removes all related data, but does not affect the actual Archipelago session.\n"
                 "If admins are configured in the world, only admins can use this command."
+                "`!fastConfig` - Quickly create a new multiworld with minimal configuration.\n"
+                "This command can be used in any channel and allows you to set up a new multiworld session with default settings, providing only the ip and port (optionnal password).\n"
+                "Example: `!fastConfig 127.0.0.1 38281 mypassword`"
             )
             await ctx.send(msg)
             return
