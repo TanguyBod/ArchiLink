@@ -89,7 +89,7 @@ class BotClient(ArchipelagoClient) :
             except Exception as e :
                 self.logger.error(f"Error processing message: {e} -->\n {message}")
                 continue
-        self.messages_to_send.put("Tracking stopped, no longer processing messages. If you want to start tracking again, please do !activate in the discord channel.")
+        self.messages_to_send.put("Tracking stopped, no longer processing messages. If you want to start tracking again, please do !activate in the discord channel.", "normal")
         
     async def process_bounced_message(self, message: dict) -> None :
         if message["tags"] == ['DeathLink'] :
@@ -104,7 +104,7 @@ class BotClient(ArchipelagoClient) :
                 time_str = time.strftime("%m-%d %H:%M:%S", time_struct)
                 msg = f"```ansi\n💀 \u001b[0;31m[{time_str}]\u001b[0m {dead_player_name} : {death_cause}\n```"
             self.logger.info(f"DeathLink : {dead_player_name} died at {death_time} with cause : {death_cause}")
-            await self.messages_to_send.put(msg)
+            await self.messages_to_send.put(msg, "deathlink")
             player = self.player_db.get_player_by_name(dead_player_name)
             if player is not None :
                 player.deaths.append(player.time_played + time.time() - player.time_joined) # Add current session time to total time played for accurate death time
@@ -118,7 +118,7 @@ class BotClient(ArchipelagoClient) :
             for data in data_list :
                 if "!hint" in data["text"] :
                     continue
-                await self.messages_to_send.put(data['text'])
+                await self.messages_to_send.put(data['text'], "normal")
         elif message["type"] == "ItemSend" :
             msg_str = ""
             for data in message["data"] :
@@ -161,7 +161,7 @@ class BotClient(ArchipelagoClient) :
                     item_sent.player_recieving.new_items.append(item_sent)
             item_sent.player_sending.checked_locations += 1 # Keep track of number of checks locations
             await self.remove_item_from_todolist(item_sent)
-            await self.messages_to_send.put(msg_str)
+            await self.messages_to_send.put(msg_str, "item_send")
             
         elif message["type"] == "Join" :
             if message["tags"] == ["TextOnly"] or message["tags"] == ["Tracker"] :

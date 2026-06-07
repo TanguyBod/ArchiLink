@@ -32,7 +32,10 @@ def check_config(data) :
         
     advanced_config_fields = [
         "custom_deathlink_flavor",
-        "auto_ping_new_items"
+        "auto_ping_new_items",
+        "player_colors_limited",
+        "item_messages_in_thread",
+        "deathlink_messages_in_thread"
     ]    
     for field in advanced_config_fields:
         if field not in data["AdvancedConfig"]:

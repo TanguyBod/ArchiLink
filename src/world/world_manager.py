@@ -175,12 +175,43 @@ class WorldSession:
         self.tasks = []
         self.admin_ids = admin_ids
         self.world_id = world_id
+        self.deathlink_thread_id = None
+        self.item_thread_id = None 
 
     async def discord_sender(self, channel, queue):
         while True:
             msg = await queue.get()
             try:
                 await channel.send(msg)
+            except Exception as e:
+                self.logger.exception(e)
+                
+    async def discord_dispatcher(self, channel, queue):
+        while True:
+            msg, msg_type = await queue.get()
+            try:
+                if msg_type == "normal":
+                    await channel.send(msg)
+                elif msg_type == "deathlink":
+                    if self.deathlink_thread_id :
+                        thread = self.bot.get_channel(self.deathlink_thread_id)
+                        if thread:
+                            await thread.send(msg)
+                        else:
+                            self.logger.warning("DeathLink thread not found, sending message to normal channel")
+                            await channel.send(msg)
+                    else:
+                        await channel.send(msg)
+                elif msg_type == "item_send":
+                    if self.item_thread_id :
+                        thread = self.bot.get_channel(self.item_thread_id)
+                        if thread:
+                            await thread.send(msg)
+                        else:
+                            self.logger.warning("Item Messages thread not found, sending message to normal channel")
+                            await channel.send(msg)
+                    else:
+                        await channel.send(msg)
             except Exception as e:
                 self.logger.exception(e)
                 
@@ -198,9 +229,21 @@ class WorldSession:
                 
     async def start(self):
         await self.bot.wait_until_ready()
+        # Setup threads if needed 
+        if self.bot_client.config["AdvancedConfig"]["deathlink_messages_in_thread"]:
+            normal_channel = self.bot.get_channel(self.normal_channel_id)
+            if normal_channel:
+                thread = await normal_channel.create_thread(name="DeathLink Messages")
+                self.deathlink_thread_id = thread.id
+        if self.bot_client.config["AdvancedConfig"]["item_messages_in_thread"]:
+            normal_channel = self.bot.get_channel(self.normal_channel_id)
+            if normal_channel:
+                thread = await normal_channel.create_thread(name="Item Messages", auto_archive_duration=1440)
+                self.item_thread_id = thread.id
+
         normal_channel = self.bot.get_channel(self.normal_channel_id)
         if normal_channel:
-            self.tasks.append(asyncio.create_task(self.discord_sender(normal_channel, self.message_queue)))
+            self.tasks.append(asyncio.create_task(self.discord_dispatcher(normal_channel, self.message_queue)))
             
         if self.ping_channel_id:
             ping_channel = self.bot.get_channel(self.ping_channel_id)
