@@ -64,6 +64,7 @@ class WorldManager:
             guild = channel.guild
             return f"https://discord.com/channels/{guild.id}/{channel.id}"
         except discord.NotFound or discord.Forbidden:
+            self.logger.error(f"Channel not found or access denied for channel id {config['DiscordConfig']['normal_channel_id']}")
             await self.delete_world(world_id)
         except Exception as e:
             self.logger.error(f"Error while creating world {world_data_dir}: {e}")
@@ -72,8 +73,7 @@ class WorldManager:
         session = self.worlds.get(world_id)
         if not session:
             return
-        session.bot_client.player_db.save_db()
-        session.bot_client.discord_db.save_db()
+        await session.bot_client.save_state()
         await session.bot_client.stop()
         await session.stop()
         del self.worlds[world_id]
@@ -112,6 +112,21 @@ class WorldManager:
                     with open(config_path, "r", encoding="utf-8") as f:
                         config = json.load(f)
                         await self.create_world(world_data_dir, config)
+                        
+    async def restart_world(self, world_id: str):
+        session = self.worlds.get(world_id)
+        if not session:
+            return "not_found"
+        await session.bot_client.save_state()
+        await self.stop_world(world_id)
+        world_data_dir = os.path.join(self.datadir, world_id)
+        config_path = os.path.join(world_data_dir, "config.json")
+        if os.path.exists(config_path):
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+                return await self.create_world(world_data_dir, config)
+        else:
+            return "config_not_found"
         
 class WorldSession:
     def __init__(

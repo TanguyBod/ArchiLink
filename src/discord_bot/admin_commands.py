@@ -148,3 +148,58 @@ Please delete the existing world before creating a new one or use a different no
         except Exception as e:
             bot.custom_logger.error(f"Error activating bot: {e}")
             await ctx.send(f"An error occurred while activating the bot. Please try again later.")
+            
+    @bot.command(name="config", help="Change the world configuration. Usage: !config <key> <new_value>")
+    async def config_change(ctx, key_to_change, *, new_value) :
+        """Change the world configuration. Usage: !config <key> <new_value>
+        Fields that can be changed with this command are:
+        - client_url
+        - client_port
+        - password
+        - bot_slot
+        - self_hosted
+        - normal_channel_id
+        - ping_channel_id
+        - admin_ids (comma separated list of discord user ids)
+        - custom_deathlink_flavor
+        - auto_ping_new_items
+        - player_colors_limited
+        """
+        session = bot.world_manager.get_world_from_channel(ctx.channel.id)
+        if session is None:
+            await ctx.send("No world is associated with this channel.")
+            return
+        if not await is_admin(ctx, session):
+            await ctx.send("You don't have permission to use this command. Only the world admins can change the configuration.")
+            return
+        try:
+            print(f"Attempting to change configuration key {key_to_change} to {new_value} for world {session.world_id}")
+            allowed_keys = {}
+
+            for section, values in session.bot_client.config.items():
+                if isinstance(values, dict):
+                    for key in values:
+                        allowed_keys[key] = section
+            if key_to_change not in allowed_keys:
+                await ctx.send(
+                    f"Invalid configuration key. Allowed keys are: {', '.join(allowed_keys.keys())}"
+                )
+                return
+            section = allowed_keys[key_to_change]            
+            current_value = session.bot_client.config[section][key_to_change]
+            if isinstance(current_value, bool):
+                new_value = new_value.lower() in ("true", "1", "yes")
+            elif isinstance(current_value, int):
+                new_value = int(new_value)
+            elif isinstance(current_value, list):
+                new_value = [int(x.strip()) for x in new_value.split(",")]
+            elif current_value is None:
+                if new_value.lower() == "null":
+                    new_value = None
+            session.bot_client.config[section][key_to_change] = new_value
+            await ctx.send(f"Configuration updated: {key_to_change} is now set to {new_value}")
+            # Recreate the bot client with the new configuration
+            await bot.world_manager.restart_world(session.world_id)
+        except Exception as e:
+            bot.custom_logger.error(f"Error changing configuration: {e}")
+            await ctx.send(f"An error occurred while changing the configuration. Please make sure the new value is of the correct type and try again.")
