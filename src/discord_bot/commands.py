@@ -510,7 +510,8 @@ You are currently registered to : {', '.join([p.player_name for p in discord_pro
         percentage_dict = {}; checks_dict = {}
         for player in session.bot_client.player_db.get_all_players() :
             if player.total_locations <= 0 :
-                await ctx.send(f"Error retrieving total locations for player {player.player_name}. Cannot compute progress graph.")
+                await ctx.send(f"Error retrieving total locations for player {player.player_name}. Cannot compute progress graph.\n\
+Ask an admin to run !computeChecks command first.")
                 return
             percentage = (player.checked_locations / player.total_locations * 100) if player.total_locations > 0 else 0
             checks_dict[player.player_name] = player.checked_locations

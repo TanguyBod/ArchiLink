@@ -146,7 +146,7 @@ class WorldManager:
         except asyncio.CancelledError:
             self.logger.info("Autosave task stopped")
             for world_id, session in self.worlds.items():
-                self.logger.info(f"Autosaving world {world_id}")
+                self.logger.info(f"Autosaving world {world_id} before shutdown")
                 await session.bot_client.save_state()
             raise
         
