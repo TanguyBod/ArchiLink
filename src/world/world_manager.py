@@ -6,6 +6,7 @@ import discord
 from archipelago.bot_client import BotClient
 from discord_bot import bot
 from discord_bot.commands import send_new_items
+from utils.config import check_config
 
 class WorldManager:
     def __init__(self, discord_bot, logger, datadir="./data"):
@@ -17,6 +18,9 @@ class WorldManager:
                 
     async def create_world(self, world_data_dir, config):
         try :
+            config, is_valid = check_config(config)
+            if not is_valid:
+                raise ValueError("Invalid config")
             world_id = world_data_dir.split("/")[-1]
             message_queue = asyncio.Queue()
             ping_queue = asyncio.Queue()
