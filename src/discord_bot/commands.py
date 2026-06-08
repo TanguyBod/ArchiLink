@@ -20,13 +20,12 @@ def strip_ansi(s):
 def ansi_ljust(s, width):
     return s + " " * (width - len(strip_ansi(s)))
 
-async def send_new_items(bot, session, player_id) :
-    player = session.bot_client.player_db.get_player_by_discord_id(player_id)
-    user = await bot.fetch_user(player_id)
+async def send_new_items(bot, session, player) :
+    user = await bot.fetch_user(player.discord_id)
     if user.dm_channel is None :
         await user.create_dm() 
     if player is None :
-        session.bot_client.logger.error(f"Player with discord id {player_id} not found.")
+        session.bot_client.logger.error(f"Player with discord id {player.discord_id} not found.")
         return
     elif len(player.new_items) == 0 :
         session.bot_client.logger.info(f"Player found : {player.player_name} but no new items to send.")
@@ -227,10 +226,10 @@ You are currently registered to : {', '.join([p.player_name for p in discord_pro
             return
         elif all == "all" :
             for player in discord_profil.slots :
-                await send_new_items(bot, session, player.discord_id)
+                await send_new_items(bot, session, player)
         else :
             current_player = discord_profil.current_slot
-            await send_new_items(bot, session, current_player.discord_id)
+            await send_new_items(bot, session, current_player)
             
     @bot.command(name='enableping')
     async def enableping(ctx) :

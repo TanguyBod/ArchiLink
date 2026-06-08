@@ -221,7 +221,7 @@ class WorldSession:
             try:
                 if player.discord_id:
                     if msg == "new_items":
-                        await send_new_items(self.bot, self, player.discord_id)
+                        await send_new_items(self.bot, self, player)
                     else:
                         self.logger.warning(f"Player {player.player_name} has no discord id")
             except Exception as e:
