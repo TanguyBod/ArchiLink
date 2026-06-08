@@ -56,7 +56,9 @@ def setup_admin_commands(bot) :
             "AdvancedConfig": {
                 "custom_deathlink_flavor" : False,
                 "auto_ping_new_items" : True,
-                "player_colors_limited" : False
+                "player_colors_limited" : False,
+                "item_messages_in_thread" : False,
+                "deathlink_messages_in_thread" : False
             }
         }
         datadir = os.getenv("DATA_DIRECTORY", "data")
