@@ -50,8 +50,7 @@ Here is the list of commands to manage worlds :
 
 | Command | Description |
 |--------|------------|
-| `!newWorld` | Initializes the bot to follow an Archipelago multiworld. Two way to configure the world are available : manual configuration or
-uploading a config.json file. This command can be used anywhere. |
+| `!newWorld` | Initializes the bot to follow an Archipelago multiworld. Two way to configure the world are available : manual configuration or uploading a config.json file. This command can be used anywhere. |
 |`!fastConfig <ip> <port> <password (optionnal)>`| Quickly create a new multiworld with default configuration. |
 | `!deleteWorld` | Delete the world associated to the current channel (the bot will no longer track progress). This command can only be used by admins to prevent griefing. |
 
