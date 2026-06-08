@@ -68,14 +68,10 @@ class WorldManager:
             await self.delete_world(world_id)
         except Exception as e:
             self.logger.error(f"Error while creating world {world_data_dir}: {e}")
-            # Remove directory if it was created
+            # Remove directory if it was created and empty
             if os.path.exists(world_data_dir):
-                for root, dirs, files in os.walk(world_data_dir, topdown=False):
-                    for name in files:
-                        os.remove(os.path.join(root, name))
-                    for name in dirs:
-                        os.rmdir(os.path.join(root, name))
-                os.rmdir(world_data_dir)
+                if not os.listdir(world_data_dir):
+                    os.rmdir(world_data_dir)
     
     async def stop_world(self, world_id: str):
         session = self.worlds.get(world_id)
