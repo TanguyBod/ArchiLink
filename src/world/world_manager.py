@@ -190,6 +190,7 @@ class WorldSession:
         while True:
             msg, msg_type = await queue.get()
             try:
+                self.logger.info(f"Dispatching message of type {msg_type}: {msg}")
                 if msg_type == "normal":
                     await channel.send(msg)
                 elif msg_type == "deathlink":

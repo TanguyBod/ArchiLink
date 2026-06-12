@@ -64,6 +64,7 @@ class ArchipelagoClient(ABC) :
     async def run(self):
         while self.running:
             try:
+                self.logger.info("Connecting to Archipelago server at " + self.client_url + ":" + self.client_port)
                 await self.connect()
                 if not self.workers_started:
                     for _ in range(self.nb_workers):
@@ -79,9 +80,11 @@ class ArchipelagoClient(ABC) :
                         await self.message_queue.put(message)
             except ConnectionClosedOK:
                 self.logger.info("Connection closed gracefully.")
+                self.running = False
                 break
             except asyncio.CancelledError:
                 self.logger.info("Archipelago client shutting down...")
+                self.running = False
                 # nettoyage éventuel
                 if self.ap_connection:
                     await self.ap_connection.close()
