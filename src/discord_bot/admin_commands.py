@@ -186,7 +186,7 @@ Please delete the existing world before creating a new one or use a different no
                 await ctx.send("Bot is already active and tracking this world.")
                 return
             session.tasks.append(asyncio.create_task(session.bot_client.start()))
-            asyncio.create_task(session.bot_client.run())
+            # asyncio.create_task(session.bot_client.run())
             await ctx.send("Bot activated. Tracking started for this world.")
             bot.custom_logger.info(f"Bot activated for world {session.world_id} by user {ctx.author.id}")
         except Exception as e:
