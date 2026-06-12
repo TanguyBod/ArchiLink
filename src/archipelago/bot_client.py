@@ -86,6 +86,9 @@ class BotClient(ArchipelagoClient) :
                     await self.process_json_message(message)
                 elif message["cmd"] == "Bounced" :
                     await self.process_bounced_message(message)
+            except asyncio.CancelledError:
+                self.logger.info("Message worker cancelled.")
+                raise
             except Exception as e :
                 self.logger.error(f"Error processing message: {e} -->\n {message}")
                 continue

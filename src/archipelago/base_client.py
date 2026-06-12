@@ -66,6 +66,7 @@ class ArchipelagoClient(ABC) :
             try:
                 self.logger.info("Connecting to Archipelago server at " + self.client_url + ":" + self.client_port)
                 await self.connect()
+                self.failed_connection_attempts = 0
                 if not self.workers_started:
                     for _ in range(self.nb_workers):
                         task = asyncio.create_task(self.process_messages())
@@ -101,16 +102,35 @@ class ArchipelagoClient(ABC) :
                         await self.stop()
         self.logger.info("Archipelago tracker stopped on endpoint " + self.client_url + ":" + self.client_port)
 
-    async def stop(self) :
-        self.logger.info("Stopping Archipelago tracking on endpoint " + self.client_url + ":" + self.client_port)
+    # async def stop(self) :
+    #     self.logger.info("Stopping Archipelago tracking on endpoint " + self.client_url + ":" + self.client_port)
+    #     self.running = False
+    #     for task in getattr(self, "worker_tasks", []):
+    #         task.cancel()
+    #     await asyncio.gather(*self.worker_tasks, return_exceptions=True)
+    #     if self.ap_connection:
+    #         await self.ap_connection.close()
+            
+    async def stop(self):
+        self.logger.info(f"Stopping Archipelago tracking on endpoint {self.client_url}:{self.client_port}")
         self.running = False
-        for task in getattr(self, "worker_tasks", []):
+        for task in self.worker_tasks:
             task.cancel()
-        await asyncio.gather(*self.worker_tasks, return_exceptions=True)
+        await asyncio.gather(*self.worker_tasks,
+                            return_exceptions=True)
+
+        self.worker_tasks.clear()
+        self.workers_started = False
         if self.ap_connection:
             await self.ap_connection.close()
+            self.ap_connection = None
+        self.message_queue = asyncio.Queue(maxsize=2000)
+        self.failed_connection_attempts = 0
             
     async def start(self) :
+        if self.running:
+            self.logger.warning("Client already running.")
+            return
         self.logger.info("Starting Archipelago tracking on endpoint " + self.client_url + ":" + self.client_port)
         self.running = True
         await self.run()
