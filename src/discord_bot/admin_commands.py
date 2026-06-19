@@ -208,6 +208,8 @@ Please delete the existing world before creating a new one or use a different no
         - custom_deathlink_flavor
         - auto_ping_new_items
         - player_colors_limited
+        - item_messages_in_thread
+        - deathlink_messages_in_thread  
         """
         session = bot.world_manager.get_world_from_channel(ctx.channel.id)
         if session is None:
@@ -243,7 +245,10 @@ Please delete the existing world before creating a new one or use a different no
             session.bot_client.config[section][key_to_change] = new_value
             await ctx.send(f"Configuration updated: {key_to_change} is now set to {new_value}")
             # Recreate the bot client with the new configuration
+            await ctx.send("Restarting the bot to apply the new configuration...")
             await bot.world_manager.restart_world(session.world_id)
+            await ctx.send("Bot restarted with the new configuration.")
+            
         except Exception as e:
             bot.custom_logger.error(f"Error changing configuration: {e}")
             await ctx.send(f"An error occurred while changing the configuration. Please make sure the new value is of the correct type and try again.")
