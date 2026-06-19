@@ -51,6 +51,10 @@ def check_config(data) :
         trimmed_data["DiscordConfig"] = {field: data["DiscordConfig"][field] for field in discord_config_fields}
         trimmed_data["AdvancedConfig"] = {field: data["AdvancedConfig"][field] for field in advanced_config_fields}
         
+        # Replace https://archipelago.gg with archipelago.gg in the client_url field if present
+        if "client_url" in trimmed_data["ArchipelagoConfig"]:
+            trimmed_data["ArchipelagoConfig"]["client_url"] = trimmed_data["ArchipelagoConfig"]["client_url"].replace("https://archipelago.gg", "archipelago.gg")
+        
         return trimmed_data, True
     
     except Exception as e:
