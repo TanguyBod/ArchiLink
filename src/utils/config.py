@@ -18,7 +18,8 @@ def check_config(data) :
             "client_port",
             "password",
             "bot_slot",
-            "self_hosted"
+            "self_hosted",
+            "room_url"
         ]
         for field in archipelago_config_fields:
             if field not in data["ArchipelagoConfig"]:
@@ -76,5 +77,6 @@ def complete_config(data) :
         data["DiscordConfig"]["ping_channel_id"] = None
     if "bot_slot" not in data["ArchipelagoConfig"]:
         data["ArchipelagoConfig"]["bot_slot"] = "ArchiLink"
-    
+    if "room_url" not in data["ArchipelagoConfig"]:
+        data["ArchipelagoConfig"]["room_url"] = ""
     return data

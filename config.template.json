@@ -4,7 +4,8 @@
         "client_port" : "",
         "password" : null,
         "bot_slot" : "ArchiLink",
-        "self_hosted" : false
+        "self_hosted" : false,
+        "room_url" : ""
     },
     "DiscordConfig": {
         "normal_channel_id" : "",

@@ -15,7 +15,6 @@ import os
 class BotClient(ArchipelagoClient) :
     def __init__(self, config: dict[str, any], message_queue: asyncio.Queue, ping_queue: asyncio.Queue, dm_queue: asyncio.Queue, logger: logging.Logger, datadir: str) :
         super().__init__(config, logger=logger)
-        self.config = config
         # Save config used for this world :
         self.json_config_path = os.path.join(datadir, "config.json")
         with open(self.json_config_path, "w", encoding="utf-8") as f:
@@ -279,7 +278,7 @@ class BotClient(ArchipelagoClient) :
             for location_name, location_id in game_data["location_name_to_id"].items() :
                 reverse["data"]["games"][game_name]["id_to_location_name"][str(location_id)] = location_name
         self.datapackage = reverse
-        
+
     async def save_state(self) -> None :
         # Save player_db and discord_db to file
         self.player_db.save_db()

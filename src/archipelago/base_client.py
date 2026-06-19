@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import uuid
 import json
 import logging
+import requests
 from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosedOK
 
@@ -14,6 +15,8 @@ class ArchipelagoClient(ABC) :
         self.client_url : str = str(config["ArchipelagoConfig"]["client_url"])
         self.client_port : str = str(config["ArchipelagoConfig"]["client_port"])
         self.self_hosted : bool = bool(config["ArchipelagoConfig"]["self_hosted"])
+        if not self.self_hosted :
+            self.room_url : str = str(config["ArchipelagoConfig"]["room_url"])
         self.password : str = str(config["ArchipelagoConfig"]["password"])
         self.password = self.password if self.password else ""
         self.uuid : int = uuid.getnode()
@@ -28,6 +31,7 @@ class ArchipelagoClient(ABC) :
         self.worker_tasks = []
         self.logger = logger
         self.failed_connection_attempts = 0
+        self.config = config
     
     async def connect(self) :
         if self.self_hosted :
@@ -65,6 +69,9 @@ class ArchipelagoClient(ABC) :
         while self.running:
             try:
                 self.logger.info("Connecting to Archipelago server at " + self.client_url + ":" + self.client_port)
+                # Before connecting, check if the port has changed for the room (only if not self-hosted)
+                if not self.self_hosted and self.room_url != "":
+                    await self.checkPort()
                 await self.connect()
                 self.failed_connection_attempts = 0
                 if not self.workers_started:
@@ -102,14 +109,22 @@ class ArchipelagoClient(ABC) :
                         await self.stop()
         self.logger.info("Archipelago tracker stopped on endpoint " + self.client_url + ":" + self.client_port)
 
-    # async def stop(self) :
-    #     self.logger.info("Stopping Archipelago tracking on endpoint " + self.client_url + ":" + self.client_port)
-    #     self.running = False
-    #     for task in getattr(self, "worker_tasks", []):
-    #         task.cancel()
-    #     await asyncio.gather(*self.worker_tasks, return_exceptions=True)
-    #     if self.ap_connection:
-    #         await self.ap_connection.close()
+    async def checkPort(self) :
+        try :
+            if not self.room_url or self.room_url == "":
+                self.logger.warning("Room URL is not set. Cannot check port.")
+                return
+            room_id = self.room_url.split("/")[-1]
+            roomapi = f"https://archipelago.gg/api/room_status/{room_id}"
+            roomdata = requests.get(roomapi)
+            roomjson = json.loads(roomdata.content)
+            last_port = str(roomjson["last_port"])
+            if last_port != self.client_port :
+                self.logger.warning(f"Port for room {room_id} has changed from {self.client_port} to {last_port}. Updating client port.")
+                self.client_port = last_port
+                self.config["ArchipelagoConfig"]["client_port"] = last_port
+        except Exception as e :
+            self.logger.error(f"Error checking port for room {self.room_url}: {e}")
             
     async def stop(self):
         self.logger.info(f"Stopping Archipelago tracking on endpoint {self.client_url}:{self.client_port}")

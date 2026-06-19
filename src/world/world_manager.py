@@ -15,6 +15,7 @@ class WorldManager:
         self.logger = logger
         self.datadir = datadir
         self.loaded = False
+        
                 
     async def create_world(self, world_data_dir, config):
         try :
@@ -76,6 +77,7 @@ class WorldManager:
             if os.path.exists(world_data_dir):
                 if not os.listdir(world_data_dir):
                     os.rmdir(world_data_dir)
+                    
     
     async def stop_world(self, world_id: str):
         session = self.worlds.get(world_id)
@@ -85,6 +87,7 @@ class WorldManager:
         await session.bot_client.stop()
         await session.stop()
         del self.worlds[world_id]
+        
         
     async def delete_world(self, world_id: str):
         await self.stop_world(world_id)
@@ -96,18 +99,21 @@ class WorldManager:
                 for name in dirs:
                     os.rmdir(os.path.join(root, name))
             os.rmdir(world_data_dir)
+            
         
     async def stop_all_worlds(self):
         world_ids = list(self.worlds.keys())
         for world_id in world_ids:
             self.logger.info(f"Stopping world {world_id}")
             await self.stop_world(world_id)
+            
         
     def get_world_from_channel(self, channel_id: int):
         for _ , session in self.worlds.items():
             if channel_id == session.normal_channel_id :
                 return session
         return None
+    
     
     async def load_worlds(self):
         if not os.path.exists(self.datadir):
@@ -120,6 +126,7 @@ class WorldManager:
                     with open(config_path, "r", encoding="utf-8") as f:
                         config = json.load(f)
                         await self.create_world(world_data_dir, config)
+                        
                         
     async def restart_world(self, world_id: str):
         session = self.worlds.get(world_id)
@@ -135,6 +142,7 @@ class WorldManager:
                 return await self.create_world(world_data_dir, config)
         else:
             return "config_not_found"
+        
         
     async def autosave_all_worlds(self):
         try :
@@ -177,6 +185,7 @@ class WorldSession:
         self.world_id = world_id
         self.deathlink_thread_id = None
         self.item_thread_id = None 
+        
 
     async def discord_sender(self, channel, queue):
         while True:
@@ -185,6 +194,7 @@ class WorldSession:
                 await channel.send(msg)
             except Exception as e:
                 self.logger.exception(e)
+                
                 
     async def discord_dispatcher(self, channel, queue):
         while True:
@@ -216,6 +226,7 @@ class WorldSession:
             except Exception as e:
                 self.logger.exception(e)
                 
+                
     async def dm_sender(self):
         while True:
             player, msg = await self.dm_queue.get()
@@ -227,6 +238,7 @@ class WorldSession:
                         self.logger.warning(f"Player {player.player_name} has no discord id")
             except Exception as e:
                 self.logger.exception(e)
+                
                 
     async def start(self):
         await self.bot.wait_until_ready()
@@ -252,6 +264,7 @@ class WorldSession:
                 self.tasks.append(asyncio.create_task(self.discord_sender(ping_channel, self.ping_queue)))
 
         self.tasks.append(asyncio.create_task(self.dm_sender()))
+        
         
     async def stop(self):
         for task in self.tasks:
