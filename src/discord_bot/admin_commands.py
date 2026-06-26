@@ -178,9 +178,6 @@ Please delete the existing world before creating a new one or use a different no
         if session is None:
             await ctx.send("No world is associated with this channel.")
             return
-        if not await is_admin(ctx, session):
-            await ctx.send("You don't have permission to use this command. Only the world admins can activate the bot.")
-            return
         try:
             if session.bot_client.running:
                 await ctx.send("Bot is already active and tracking this world.")
