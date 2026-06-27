@@ -98,6 +98,14 @@ False if the multiworld is hosted on archipelago.gg. True if it's self-hosted.
 
 ---
 
+## `room_url`
+
+```json
+"bot_slot": "https://archipelago.gg/room/tDJ_1dzadxqdND3kh3A"
+```
+
+The link to your MultiWorld room. Fill this field only if you're hosting the game on archipelago.gg (it is to track port changes)
+
 # `DiscordConfig`
 
 Configuration related to the Discord bot.
@@ -207,6 +215,22 @@ This field allow the bot to send message new items to a player when he join the 
 
 Enabling this option will prevent item colors from being used as player colors.
 
+## `item_messages_in_thread`
+
+```json
+"item_messages_in_thread": true
+```
+
+Enabling this option will put all item messages in a specific thread of the normal channel (to keep it clean for commands).
+
+## `deathlink_messages_in_thread`
+
+```json
+"deathlink_messages_in_thread": true
+```
+
+Enabling this option will put all deathlink messages in a specific thread of the normal channel (to keep it clean for commands).
+
 # Full Example
 
 ```json
@@ -216,7 +240,8 @@ Enabling this option will prevent item colors from being used as player colors.
         "client_port" : "12345",
         "password" : null,
         "bot_slot" : "ArchiLink",
-        "self_hosted" : true
+        "self_hosted" : true,
+        "room_url" : ""
     },
     "DiscordConfig": {
         "normal_channel_id" : "123456789",
@@ -226,7 +251,9 @@ Enabling this option will prevent item colors from being used as player colors.
     "AdvancedConfig": {
         "custom_deathlink_flavor" : false,
         "auto_ping_new_items" : true,
-        "player_colors_limited" : false
+        "player_colors_limited" : false,
+        "item_messages_in_thread" : false,
+        "deathlink_messages_in_thread" : false
     }
 }
 ```

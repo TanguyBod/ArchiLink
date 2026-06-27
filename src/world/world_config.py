@@ -234,12 +234,20 @@ class ArchipelagoModal(discord.ui.Modal, title="Archipelago Config"):
             default=str(config.get("self_hosted", False)).lower(),
             required=True
         )
+        
+        self.room_url = discord.ui.TextInput(
+            label="Room URL (optional)",
+            placeholder="https://archipelago.gg/room/12345",
+            default=config.get("room_url", ""),
+            required=False
+        )
 
         self.add_item(self.client_url)
         self.add_item(self.client_port)
         self.add_item(self.password)
         self.add_item(self.bot_slot)
         self.add_item(self.self_hosted)
+        self.add_item(self.room_url)
 
     async def on_submit(self, interaction: discord.Interaction):
 
@@ -248,7 +256,8 @@ class ArchipelagoModal(discord.ui.Modal, title="Archipelago Config"):
             "client_port": self.client_port.value,
             "password": self.password.value or None,
             "bot_slot": self.bot_slot.value or "ArchiLink",
-            "self_hosted": False
+            "self_hosted": False,
+            "room_url": self.room_url.value or ""
         }
 
         await self.view.update_message(interaction)
@@ -322,16 +331,35 @@ class AdvancedModal(discord.ui.Modal, title="Advanced Config"):
             required=True,
             default="false"
         )
+        
+        self.item_messages_in_thread = discord.ui.TextInput(
+            label="Item messages in thread (true/false)",
+            placeholder="true/false",
+            required=True,
+            default="false"
+        )
+        
+        self.deathlink_messages_in_thread = discord.ui.TextInput(
+            label="Deathlink messages in thread (true/false)",
+            placeholder="true/false",
+            required=True,
+            default="false"
+        )
                 
         self.add_item(self.custom_deathlink_flavor)
         self.add_item(self.auto_ping_new_items)
         self.add_item(self.player_colors_limited)
+        self.add_item(self.item_messages_in_thread)
+        self.add_item(self.deathlink_messages_in_thread)
+        
     async def on_submit(self, interaction: discord.Interaction):
 
         self.state.data["AdvancedConfig"] = {
             "custom_deathlink_flavor": self.custom_deathlink_flavor.value.lower() == "true",
             "auto_ping_new_items": self.auto_ping_new_items.value.lower() != "false",
-            "player_colors_limited": self.player_colors_limited.value.lower() == "true"
+            "player_colors_limited": self.player_colors_limited.value.lower() == "true",
+            "item_messages_in_thread": self.item_messages_in_thread.value.lower() == "false",
+            "deathlink_messages_in_thread": self.deathlink_messages_in_thread.value.lower() == "false",
         }
         
         await self.view.update_message(interaction)
