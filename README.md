@@ -78,6 +78,7 @@ Once a world is instanciated, you can interact with it with these commands :
 | `!disableping` | Disable ping notifications. |
 | `!enablenewitems` | Enable automatic DM notifications for new items when connecting to the game. |
 | `!disablenewitems` | Disable automatic DM notifications for new items (use `!new` manually instead). |
+| `!activate` | Restart tracking of the world from the bot after a connection issue (for example archipelago.gg inactivity) |
 | `!help [command]` | Show all commands or detailed info for a specific command. |
 
 Admin commands (available for everyone if no admin specified) :
@@ -89,6 +90,6 @@ Admin commands (available for everyone if no admin specified) :
 | `!deleteWorld` | Delete the world associated to the current channel (the bot will no longer track progress). |
 | `!listWorlds` | Display total number of worlds tracked in this server and associated channels. |
 | `!deactivate` | Stop the bot from tracking the world associated with the current channel. |
-| `!activate` | Restart tracking of the world from the bot after a connection issue (for example archipelago.gg inactivity) |
+
 
 
