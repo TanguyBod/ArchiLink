@@ -202,10 +202,10 @@ class ArchipelagoModal(discord.ui.Modal, title="Archipelago Config"):
 
         config = state.data.get("ArchipelagoConfig", {})
 
-        self.client_url = discord.ui.TextInput(
-            label="Client URL",
-            placeholder="https://archipelago.gg or 127.0.0.1",
-            default=config.get("client_url", ""),
+        self.server = discord.ui.TextInput(
+            label="Server (ip:port)",
+            placeholder="archipelago.gg:65432 or 127.0.0.1:12345",
+            default=config.get("server", ""),
             required=True
         )
 
@@ -242,18 +242,19 @@ class ArchipelagoModal(discord.ui.Modal, title="Archipelago Config"):
             required=False
         )
 
-        self.add_item(self.client_url)
-        self.add_item(self.client_port)
+        self.add_item(self.server)
         self.add_item(self.password)
         self.add_item(self.bot_slot)
         self.add_item(self.self_hosted)
         self.add_item(self.room_url)
 
     async def on_submit(self, interaction: discord.Interaction):
+        
+        client_url, client_port = self.server.value.split(":")
 
         self.state.data["ArchipelagoConfig"] = {
-            "client_url": self.client_url.value,
-            "client_port": self.client_port.value,
+            "client_url": client_url,
+            "client_port": client_port,
             "password": self.password.value or None,
             "bot_slot": self.bot_slot.value or "ArchiLink",
             "self_hosted": False,
