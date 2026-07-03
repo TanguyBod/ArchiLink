@@ -88,13 +88,16 @@ class BotClient(ArchipelagoClient) :
                     await self.process_bounced_message(message)
                 elif message["cmd"] == "Retrieved" :
                     await self.process_retrieved_message(message)
+                elif message["cmd"] == "Stop" :
+                    self.logger.info("Received Stop command, stopping message processing.")
+                    await self.messages_to_send.put(("Tracking stopped, no longer processing messages. If you want to start tracking again, please do !activate in the discord channel.", "normal"))
+                    continue
             except asyncio.CancelledError:
                 self.logger.info("Message worker cancelled.")
                 raise
             except Exception as e :
                 self.logger.error(f"Error processing message: {e} -->\n {message}")
                 continue
-        self.messages_to_send.put(("Tracking stopped, no longer processing messages. If you want to start tracking again, please do !activate in the discord channel.", "normal"))
         
     async def process_bounced_message(self, message: dict) -> None :
         if message["tags"] == ['DeathLink'] :
@@ -203,6 +206,8 @@ class BotClient(ArchipelagoClient) :
                 self.logger.info(f"Player {player.player_name} in slot {player_slot} played for {time_played:.2f} seconds, total time played : {player.time_played:.2f} seconds.")
             else :
                 self.logger.warning(f"Received Part message for player {player.player_name} in slot {player_slot} but player was not marked as playing.")
+        elif message["type"] == "Tutorial" :
+            self.logger.info(f"Received Tutorial message : {message['data']}")
         else :
             self.logger.debug(f"Unknown message type : {message['type']} --> \n {message}")
             

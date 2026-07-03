@@ -129,6 +129,10 @@ class ArchipelagoClient(ABC) :
     async def stop(self):
         self.logger.info(f"Stopping Archipelago tracking on endpoint {self.client_url}:{self.client_port}")
         self.running = False
+        await self.message_queue.put({"cmd": "Stop"})
+        # Wait message queue to be empty before cancelling workers
+        while not self.message_queue.empty():
+            await asyncio.sleep(0.5)
         for task in self.worker_tasks:
             task.cancel()
         await asyncio.gather(*self.worker_tasks,

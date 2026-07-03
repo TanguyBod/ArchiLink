@@ -165,7 +165,6 @@ Please delete the existing world before creating a new one or use a different no
             return
         try:
             await session.bot_client.stop()
-            await ctx.send("Bot deactivated. Tracking stopped for this world. To activate again, please use !activate.")
             bot.custom_logger.info(f"Bot deactivated for world {session.world_id} by user {ctx.author.id}")
         except Exception as e:
             bot.custom_logger.error(f"Error deactivating bot: {e}")
