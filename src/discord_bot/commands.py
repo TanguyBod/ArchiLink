@@ -1,6 +1,7 @@
 from archipelago.hint_client import HintClient
 from models.discord_profil import DiscordProfile
 from models.button import Button
+from models.item import Item
 from utils.colors import get_ansi_color_from_flag
 from utils.name_finder import resolve_player_name
 from discord_bot.texts_flavors import *
@@ -110,6 +111,48 @@ def setup_commands(bot):
             return
         players = session.bot_client.player_db.get_all_players_names()
         await ctx.send(f"Players in this multiworld are : {', '.join(players)}")
+        
+    @bot.command(name='allhints', description="Get all hints available for the current player.")
+    async def allhints(ctx):
+        session = await check_world_channel(bot, ctx.channel.id)
+        if session is None :
+            await ctx.send("This channel is not associated to any world. Please use the commands in the correct channel or create a new world with !newWorld.")
+            return
+        discord_id = ctx.author.id
+        discord_profil = session.bot_client.discord_db.get_discord_profile(discord_id)
+        if discord_profil is None or discord_profil.slots == [] :
+            await ctx.send(f"You are not registered to any player. Please register first using `!register <player_name>` command.")
+            return
+        player = discord_profil.current_slot     
+        hints = await session.bot_client.retrieve_available_hints(player.player_slot)
+        hints_to_send = hints["to_send"]; hints_to_get = hints["to_get"]
+        msg = f"```ansi\nHere is a list of all the hints available for you : \n"
+        l1 = max(len("You"), len(player.player_name)) + 1
+        l2 = max(len("Item"), max(len(item.item_name) for item in hints_to_get + hints_to_send)) + 1
+        l3 = max(len("Sender"), max(len(item.player_sending.player_name) for item in hints_to_get + hints_to_send)) + 1
+        l4 = max(len("Location"), max(len(item.location_name) for item in hints_to_get + hints_to_send)) + 1
+        msg += f"{'You'.ljust(l1)} || {'Item'.ljust(l2)} || {'Sender'.ljust(l3)} || {'Location'.ljust(l4)}\n"
+        for item in hints_to_get :
+            color = await get_ansi_color_from_flag(item.flag)
+            msg += f"{ansi_ljust(player.name_colored, l1)} || \u001b[0;{color}m{item.item_name.ljust(l2)}\u001b[0m || {ansi_ljust(item.player_sending.name_colored, l3)} || {item.location_name.ljust(l4)}\n"
+            if len(msg) > 1500 : # Discord message limit is 2000 characters, keep some margin
+                msg += "```"
+                await ctx.send(msg)
+                msg = "```ansi\n"
+        msg += "```"
+        await ctx.send(msg)
+        msg = "```ansi\n"
+        msg += "\nHere are all the items you can send to other players :\n"
+        msg += f"{'You'.ljust(l1)} || {'Item'.ljust(l2)} || {'Receiver'.ljust(l3)} || {'Location'.ljust(l4)}\n"
+        for item in hints_to_send :
+            color = await get_ansi_color_from_flag(item.flag)
+            msg += f"{ansi_ljust(player.name_colored, l1)} || \u001b[0;{color}m{item.item_name.ljust(l2)}\u001b[0m || {ansi_ljust(item.player_recieving.name_colored, l3)} || {item.location_name.ljust(l4)}\n"
+            if len(msg) > 1500 : # Discord message limit is 2000 characters, keep some margin
+                msg += "```"
+                await ctx.send(msg)
+                msg = "```ansi\n"
+        msg += "```"
+        await ctx.send(msg)
 
     @bot.command(name='register')
     async def register(ctx, *, player_name: str) :

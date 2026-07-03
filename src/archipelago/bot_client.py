@@ -34,6 +34,7 @@ class BotClient(ArchipelagoClient) :
         self.datapackage_path = os.path.join(datadir, "datapackage.json")
         self.reversed_datapackage_path = os.path.join(datadir, "reversed_datapackage.json")
         self.custom_deathlink_flavor = config["AdvancedConfig"].get("custom_deathlink_flavor", False)
+        self.hint_results = {}
     
     async def process_messages(self):
         while self.running:
@@ -85,6 +86,8 @@ class BotClient(ArchipelagoClient) :
                     await self.process_json_message(message)
                 elif message["cmd"] == "Bounced" :
                     await self.process_bounced_message(message)
+                elif message["cmd"] == "Retrieved" :
+                    await self.process_retrieved_message(message)
             except asyncio.CancelledError:
                 self.logger.info("Message worker cancelled.")
                 raise
@@ -202,6 +205,35 @@ class BotClient(ArchipelagoClient) :
                 self.logger.warning(f"Received Part message for player {player.player_name} in slot {player_slot} but player was not marked as playing.")
         else :
             self.logger.debug(f"Unknown message type : {message['type']} --> \n {message}")
+            
+    async def process_retrieved_message(self, message: dict) -> None :
+        # Hints are in a list in the keys field of the message in the first key of the data dict :
+        player_key = list(message["keys"].keys())[0]
+        player_slot = int(player_key.split("_")[-1])
+        hints = message["keys"][player_key]
+        items_to_get = []; items_to_send = []
+        for hint in hints :
+            if hint["found"] == True :
+                continue # Ignore found hints
+            player_sending = self.player_db.get_player_by_slot(int(hint["finding_player"]))
+            player_recieving = self.player_db.get_player_by_slot(int(hint["receiving_player"]))
+            location_name = self.datapackage["data"]["games"][player_sending.player_game]["id_to_location_name"][str(hint["location"])]
+            item_name = self.datapackage["data"]["games"][player_recieving.player_game]["id_to_item_name"][str(hint["item"])]
+            item = Item(
+                item_name = item_name,
+                item_id = hint["item"],
+                location_name = location_name,
+                location_id = hint["location"],
+                player_sending = player_sending,
+                player_recieving = player_recieving,
+                flag = hint.get("flags", None)
+            )
+            if player_sending.player_slot == player_slot :
+                items_to_send.append(item)
+            elif player_recieving.player_slot == player_slot :
+                items_to_get.append(item)
+        items = {"to_get" : items_to_get, "to_send" : items_to_send}
+        self.hint_results[player_slot] = items
 
     async def process_item_send(self, receiving_field: str, item_field: dict) -> Item :
         player_recieving = self.player_db.get_player_by_slot(int(receiving_field))
@@ -286,4 +318,18 @@ class BotClient(ArchipelagoClient) :
         # Save config to file
         async with aiofiles.open(self.json_config_path, "w", encoding="utf-8") as f:
             await f.write(json.dumps(self.config, indent=4, ensure_ascii=False))
+            
+    async def retrieve_available_hints(self, player_slot: int, team_slot: int = 0) :
+        payload = {
+            "cmd": "Get",
+            "keys": [
+                f"_read_hints_{team_slot}_{player_slot}",
+            ]
+        }
+        await self.send_message(payload)
+        while not self.hint_results.get(player_slot) :
+            await asyncio.sleep(0.5)
+        hints = self.hint_results[player_slot]
+        self.hint_results[player_slot] = None # Reset hint results for next retrieval
+        return hints
         
