@@ -3,7 +3,7 @@ from models.discord_profil import DiscordProfile
 from models.button import Button
 from models.item import Item
 from utils.colors import get_ansi_color_from_flag
-from utils.name_finder import resolve_player_name
+from utils.name_finder import resolve_player_name, resolve_item
 from discord_bot.texts_flavors import *
 import asyncio
 import re
@@ -20,6 +20,13 @@ def strip_ansi(s):
 
 def ansi_ljust(s, width):
     return s + " " * (width - len(strip_ansi(s)))
+
+def normalize(text: str) -> str:
+    return (
+        text.casefold()
+            .replace("’", "'")
+            .strip()
+    )
 
 async def send_new_items(bot, session, player) :
     user = await bot.fetch_user(player.discord_id)
@@ -168,15 +175,16 @@ def setup_commands(bot):
         player = discord_profil.current_slot
         hints = await session.bot_client.retrieve_available_hints(player.player_slot)
         hints_to_get = hints["to_get"]
-        for item in hints_to_get :
-            if item.item_name.lower() == item_name.lower() :
-                player_sending = item.player_sending
-                async with session.bot_client.lock:
-                    player_sending.todolist.append(item)
-                await ctx.send(f"Item {item_name} added to your wishlist.")
-                return
-        await ctx.send(f"Item {item_name} not found in your hint list. Please check the spelling and try again. You can use `!allhints` command to see all the items you can add to your wishlist.")
-
+        
+        item = resolve_item(item_name, hints_to_get)
+        if item is not None :
+            player_sending = item.player_sending
+            async with session.bot_client.lock:
+                player_sending.todolist.append(item)
+            await ctx.send(f"Item {item.item_name} added to your wishlist.")
+        else :
+            await ctx.send(f"Item {item_name} not found in your hint list. Please check the spelling and try again. You can use `!allhints` command to see all the items you can add to your wishlist.")
+        
     @bot.command(name='register')
     async def register(ctx, *, player_name: str) :
         session = await check_world_channel(bot, ctx.channel.id)

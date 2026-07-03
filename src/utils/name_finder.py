@@ -43,3 +43,49 @@ def resolve_player_name(input_name: str, player_names: list[str], cutoff: float 
 
     best_norm = close_matches[0]
     return normalized_map[best_norm][0]
+
+def resolve_item(input_name: str, items: list, cutoff: float = 0.75):
+    """
+    Return the item whose item_name best matches input_name,
+    or None if no good match is found.
+
+    - Handle case insensitivity
+    - Handle accents
+    - Handle typos (fuzzy matching)
+    - Handle duplicates differentiated only by case
+    """
+
+    if not items:
+        return None
+
+    # Exact match first
+    for item in items:
+        if item.item_name == input_name:
+            return item
+
+    normalized_map: dict[str, list] = {}
+
+    for item in items:
+        norm = normalize_name(item.item_name)
+        normalized_map.setdefault(norm, []).append(item)
+
+    input_norm = normalize_name(input_name)
+
+    # Exact normalized match
+    if input_norm in normalized_map:
+        return normalized_map[input_norm][0]
+
+    # Fuzzy match
+    all_norm_names = list(normalized_map.keys())
+    close_matches = get_close_matches(
+        input_norm,
+        all_norm_names,
+        n=1,
+        cutoff=cutoff,
+    )
+
+    if not close_matches:
+        return None
+
+    best_norm = close_matches[0]
+    return normalized_map[best_norm][0]

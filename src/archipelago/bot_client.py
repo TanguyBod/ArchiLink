@@ -90,7 +90,8 @@ class BotClient(ArchipelagoClient) :
                     await self.process_retrieved_message(message)
                 elif message["cmd"] == "Stop" :
                     self.logger.info("Received Stop command, stopping message processing.")
-                    await self.messages_to_send.put(("Tracking stopped, no longer processing messages. If you want to start tracking again, please do !activate in the discord channel.", "normal"))
+                    await self.messages_to_send.put(("Tracking stopped, no longer processing messages. If you want to start tracking again, please do !activate in the discord channel.\
+If it's not related to archipelago.gg inactivity, it is the self-hosted instance restarting.", "normal"))
                     continue
             except asyncio.CancelledError:
                 self.logger.info("Message worker cancelled.")
