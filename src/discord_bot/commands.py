@@ -126,7 +126,7 @@ def setup_commands(bot):
         player = discord_profil.current_slot     
         hints = await session.bot_client.retrieve_available_hints(player.player_slot)
         hints_to_send = hints["to_send"]; hints_to_get = hints["to_get"]
-        msg = f"```ansi\nHere is a list of all the hints available for you : \n"
+        msg = f"```ansi\nHere is a list of all the hints available for you (what other players can send you): \n"
         l1 = max(len("You"), len(player.player_name)) + 1
         l2 = max(len("Item"), max(len(item.item_name) for item in hints_to_get + hints_to_send)) + 1
         l3 = max(len("Sender"), max(len(item.player_sending.player_name) for item in hints_to_get + hints_to_send)) + 1
@@ -153,6 +153,29 @@ def setup_commands(bot):
                 msg = "```ansi\n"
         msg += "```"
         await ctx.send(msg)
+        
+    @bot.command(name="wish", description="Add an item to your wishlist list. Only if item has been hinted before.")
+    async def wish(ctx, *, item_name: str) :
+        session = await check_world_channel(bot, ctx.channel.id)
+        if session is None :
+            await ctx.send("This channel is not associated to any world. Please use the commands in the correct channel or create a new world with !newWorld.")
+            return
+        discord_id = ctx.author.id
+        discord_profil = session.bot_client.discord_db.get_discord_profile(discord_id)
+        if discord_profil is None or discord_profil.slots == [] :
+            await ctx.send(f"You are not registered to any player. Please register first using `!register <player_name>` command.")
+            return
+        player = discord_profil.current_slot
+        hints = await session.bot_client.retrieve_available_hints(player.player_slot)
+        hints_to_get = hints["to_get"]
+        for item in hints_to_get :
+            if item.item_name.lower() == item_name.lower() :
+                player_sending = item.player_sending
+                async with session.bot_client.lock:
+                    player_sending.todolist.append(item)
+                await ctx.send(f"Item {item_name} added to your wishlist.")
+                return
+        await ctx.send(f"Item {item_name} not found in your hint list. Please check the spelling and try again. You can use `!allhints` command to see all the items you can add to your wishlist.")
 
     @bot.command(name='register')
     async def register(ctx, *, player_name: str) :
