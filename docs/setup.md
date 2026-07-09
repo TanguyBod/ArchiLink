@@ -1,9 +1,6 @@
 # Setup
 
-> ⚠️ Currently, only self-hosting is supported.  
-> A hosted/public version may be available in the future for users who do not want to host the bot themselves.
-
-> ⚠️ Windows hasn't been tested yet, i cannot garuantee that code will work (you still can launch it with [WSL](https://learn.microsoft.com/en-us/windows/wsl/install))
+> ⚠️ If you're self-hosting the bot, beware that Windows hasn't been tested yet, i cannot garuantee that code will work (you still can launch it with [WSL](https://learn.microsoft.com/en-us/windows/wsl/install))
 
 ---
 
