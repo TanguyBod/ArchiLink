@@ -21,6 +21,7 @@ class HintClient(ArchipelagoClient) :
         self.client_base = bot_client
         self.hintpoints = 0
         self.hint_found = False
+        self.hint_client = True
     
     async def send_hint(self) :
         payload =   {

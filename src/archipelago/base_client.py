@@ -32,6 +32,7 @@ class ArchipelagoClient(ABC) :
         self.logger = logger
         self.failed_connection_attempts = 0
         self.config = config
+        self.hint_client = False
     
     async def connect(self) :
         if self.self_hosted :
@@ -89,7 +90,9 @@ class ArchipelagoClient(ABC) :
             except ConnectionClosedOK:
                 self.logger.info("Connection closed gracefully.")
                 self.running = False
-                self.logger.info("Archipelago client stopped Connection Closed.")
+                if not self.hint_client:
+                    await self.message_queue.put({"cmd": "Stop"})
+                    await asyncio.sleep(10)
                 break
             except asyncio.CancelledError:
                 self.logger.info("Archipelago client shutting down...")
