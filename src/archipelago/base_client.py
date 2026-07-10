@@ -131,8 +131,10 @@ class ArchipelagoClient(ABC) :
         self.running = False
         await self.message_queue.put({"cmd": "Stop"})
         # Wait message queue to be empty before cancelling workers
-        while not self.message_queue.empty():
+        counter = 0 # Wait for a maximum of 5 seconds (20 * 0.5s) for the message queue to be empty
+        while not self.message_queue.empty() and counter < 20:
             await asyncio.sleep(0.5)
+            counter += 1
         for task in self.worker_tasks:
             task.cancel()
         await asyncio.gather(*self.worker_tasks,

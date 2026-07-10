@@ -615,6 +615,21 @@ Ask an admin to run !computeChecks command first.")
         plt.savefig(buf, format='png')
         buf.seek(0)
         await ctx.send(file=discord.File(buf, filename='progress_graph.png'))
+        
+    @bot.command(name='say', help='Send a message to the MultiWorld Client')
+    async def say(ctx, *, message: str):
+        session = await check_world_channel(bot, ctx.channel.id)
+        if session is None:
+            await ctx.send("This channel is not associated with any world. Please use the commands in the correct channel or create a new world with !newWorld.")
+            return
+        discord_profil = session.bot_client.discord_db.get_discord_profile(ctx.author.id)
+        if discord_profil is None or discord_profil.current_slot is None:
+            await ctx.send("You are not registered to any player. Please register first using `!register <player_name>` command.")
+            return
+        player = discord_profil.current_slot
+        message_to_send = f"[{player.player_name}] {message}"
+        bot.custom_logger.info(f"Sending message to MultiWorld Client: {message_to_send}")
+        await session.bot_client.say_messages(message_to_send)
 
     @bot.command(name='help')
     async def help(ctx, command: str = None):
@@ -633,7 +648,7 @@ Ask an admin to run !computeChecks command first.")
             )
             await ctx.send(msg)
             return
-
+        
         commands_help = {
             "register": {
                 "usage": "`!register <player_name>`",

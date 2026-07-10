@@ -40,7 +40,7 @@ class BotClient(ArchipelagoClient) :
         while self.running:
             try :
                 message = await self.message_queue.get()
-                self.logger.debug(f"Processing message: {message}")
+                self.logger.info(f"Processing message: {message}")
                 if message["cmd"] == "RoomInfo" :
                     # Check DataPackage and send connect
                     await self.check_data_package()
@@ -338,4 +338,10 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
         hints = self.hint_results[player_slot]
         self.hint_results[player_slot] = None # Reset hint results for next retrieval
         return hints
-        
+    
+    async def say_messages(self, message):
+        payload = {
+            "cmd": "Say",
+            "text": json.dumps(message, ensure_ascii=False)
+        }
+        await self.send_message(payload)
