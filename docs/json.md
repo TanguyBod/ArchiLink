@@ -150,7 +150,7 @@ The Discord channel ID used for item pings or important notifications. If not se
 "admin_ids": []
 ```
 
-List of Discord user IDs allowed to access admin-only commands.
+List of Discord user IDs or role IDs allowed to access admin-only commands.
 
 ### Example
 
@@ -161,7 +161,7 @@ List of Discord user IDs allowed to access admin-only commands.
 ]
 ```
 
-> 💡 To get a Discord user ID, enable **Developer Mode** in Discord and right-click a user.
+> 💡 To get a Discord user ID or role ID, enable **Developer Mode** in Discord and right-click the user or role.
 
 ---
 
