@@ -89,6 +89,7 @@ class ArchipelagoClient(ABC) :
             except ConnectionClosedOK:
                 self.logger.info("Connection closed gracefully.")
                 self.running = False
+                self.logger.info("Archipelago client stopped Connection Closed.")
                 break
             except asyncio.CancelledError:
                 self.logger.info("Archipelago client shutting down...")
