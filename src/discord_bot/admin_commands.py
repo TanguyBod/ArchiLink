@@ -9,7 +9,10 @@ async def is_admin(ctx, session):
     admin_ids = session.admin_ids
     if admin_ids == [] :
         return True # If no admin ids are specified, allow everyone to use admin commands
-    return ctx.author.id in session.admin_ids
+    if ctx.author.id in admin_ids:
+        return True
+    roles = getattr(ctx.author, "roles", [])
+    return any(role.id in admin_ids for role in roles)
 
 def setup_admin_commands(bot) :
     
@@ -148,7 +151,7 @@ Please delete the existing world before creating a new one or use a different no
         if session is None:
             await ctx.send("No world is associated with this channel.")
             return False
-        if ctx.author.id in session.admin_ids:
+        if await is_admin(ctx, session):
             await ctx.send("You are an admin.")
         else :
             await ctx.send("You are not an admin.")
@@ -200,7 +203,7 @@ Please delete the existing world before creating a new one or use a different no
         - self_hosted
         - normal_channel_id
         - ping_channel_id
-        - admin_ids (comma separated list of discord user ids)
+        - admin_ids (comma separated list of discord user or role ids)
         - custom_deathlink_flavor
         - auto_ping_new_items
         - player_colors_limited
