@@ -2,7 +2,7 @@
 
 This document describes every field available in `config.json`.
 
-A template is available [here](https://github.com/TanguyBod/ArchiLink/blob/main/config.template.json).
+A template is available [here](https://github.com/TanguyBod/ArchiLink/blob/main/config.template.json) and an example at the end of this document.
 
 ---
 
