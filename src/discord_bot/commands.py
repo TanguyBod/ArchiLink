@@ -739,6 +739,15 @@ Ask an admin to run !computeChecks command first.")
                     "Shows all wishlist items targeting your currently tracked player."
                 )
             },
+            "say": {
+                "usage": "`!say <message>`",
+                "description": "Send a message to the MultiWorld Client.",
+                "details": (
+                    "The message will be sent as if it was from your currently tracked player.\n\n"
+                    "Example:\n"
+                    "`!say Hello everyone!`"
+                )
+            },
             "enableping": {
                 "usage": "`!enableping`",
                 "description": "Enable todo notifications.",
@@ -822,7 +831,8 @@ Ask an admin to run !computeChecks command first.")
                 "`!clearTodo`\n"
                 "`!removeTodo <item>`\n"
                 "`!wishlist`\n"
-                "`!new`\n\n"
+                "`!new`\n"
+                "`!say <message>`\n\n"
 
                 "**Statistics**\n"
                 "`!wastedOnArchipelago`\n"
