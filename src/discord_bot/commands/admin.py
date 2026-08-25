@@ -200,6 +200,8 @@ Please delete the existing world before creating a new one or use a different no
                 if new_value.lower() == "null":
                     new_value = None
             session.bot_client.config[section][key_to_change] = new_value
+            # Restart the bot client to apply the new configuration
+            self.bot.world_manager.restart_bot_client(session.world_id)
             return f"Configuration updated: {key_to_change} is now set to {new_value}"
         except Exception as e:
             self.bot.custom_logger.error(f"Error changing configuration: {e}")
@@ -304,6 +306,12 @@ Please delete the existing world before creating a new one or use a different no
     async def activate_slash(self, interaction: discord.Interaction):
         await interaction.response.defer()
         response = await self._activate(interaction.channel.id)
+        await interaction.followup.send(response)
+        
+    @app_commands.command(name="config", description="Change the world configuration.")
+    async def config_change_slash(self, interaction: discord.Interaction, key_to_change: str, new_value: str):
+        await interaction.response.defer()
+        response = await self._config(interaction.channel.id, key_to_change, new_value)
         await interaction.followup.send(response)
 
 async def setup(bot):
