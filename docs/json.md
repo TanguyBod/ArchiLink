@@ -214,6 +214,7 @@ This field allow the bot to send new items to a player when he join the game (li
 ```
 
 Enabling this option will prevent item colors from being used as player colors.
+
 ---
 
 ## `item_messages_in_thread`
@@ -223,6 +224,7 @@ Enabling this option will prevent item colors from being used as player colors.
 ```
 
 Enabling this option will put all item messages in a specific thread of the normal channel (to keep it clean for commands).
+
 ---
 
 ## `deathlink_messages_in_thread`
@@ -232,6 +234,7 @@ Enabling this option will put all item messages in a specific thread of the norm
 ```
 
 Enabling this option will put all deathlink messages in a specific thread of the normal channel (to keep it clean for commands).
+
 ---
 
 ## `send_join_leave_messages`
