@@ -31,7 +31,7 @@ Once the bot has been added to your server, you can create and configure an Arch
 ```text
 !newWorld
 ```
-
+If you do not have inserted the [yaml](https://github.com/TanguyBod/ArchiLink/blob/main/archilink.yaml) during your archipelago world creation, you'll have to rename the bot name to a player name in the config.json
 You can now edit a copy of the [config.json](https://github.com/TanguyBod/ArchiLink/blob/main/config.template.json) file and drop it in the channel or be guided by the setup wizard.
 All fields of the json are described [here](https://github.com/TanguyBod/ArchiLink/blob/main/docs/json.md).
 Beware, setup wizard hasn't been updated recently, some errors might happen.
