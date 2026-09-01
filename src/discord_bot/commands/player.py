@@ -118,7 +118,7 @@ You are currently registered to : {', '.join([p.player_name for p in discord_pro
             discord_profil.current_slot = player
             return f"Successfully switched to player {player_name}."
         
-    async def _setcolor(self, channel_id, author, color: str):
+    async def _setcolor(self, channel_id, author, color: str, all: bool = False):
         session, discord_profil = await get_current_player(self.bot, channel_id, author)
         if session is None or discord_profil is None :
             return "No session or discord profile found. Please make sure you are in a valid game session and registered."
@@ -135,9 +135,15 @@ You are currently registered to : {', '.join([p.player_name for p in discord_pro
         }
         if color.lower() not in colors:
             return f"Invalid color : {color}. Please choose from: black, red, green, yellow, blue, magenta, cyan, white."
-        player.color = colors[color.lower()]
-        player.name_colored = f"{player.color}{player.player_name}\u001b[0m"
-        return f"Your preferred color has been set to {color}."
+        if all:
+            for p in discord_profil.slots:
+                p.color = colors[color.lower()]
+                p.name_colored = f"{p.color}{p.player_name}\u001b[0m"
+            return f"All your registered players' preferred color has been set to {color}."
+        else :
+            player.color = colors[color.lower()]
+            player.name_colored = f"{player.color}{player.player_name}\u001b[0m"
+            return f"Your preferred color has been set to {color}."
     
     # ============================================================
     # Prefix commands
@@ -174,8 +180,8 @@ You are currently registered to : {', '.join([p.player_name for p in discord_pro
             await ctx.send(response)
             
     @commands.command(name='setcolor', help='Set your preferred color.')
-    async def setcolor(self, ctx, color: str):
-        response = await self._setcolor(ctx.channel.id, ctx.author, color)
+    async def setcolor(self, ctx, color: str, all: bool = False) :
+        response = await self._setcolor(ctx.channel.id, ctx.author, color, all)
         if response is not None:
             await ctx.send(response)
     
@@ -226,11 +232,11 @@ You are currently registered to : {', '.join([p.player_name for p in discord_pro
             await interaction.followup.send(response)
 
     @app_commands.command(name='setcolor', description='Set your preferred color.')
-    @app_commands.describe(color='The color you want to set. Choose from: black, red, green, yellow, blue, magenta, cyan, white.')
+    @app_commands.describe(color='The color you want to set. Choose from: black, red, green, yellow, blue, magenta, cyan, white.', all='Set the color for all your registered players.')
     @app_commands.autocomplete(color=autocomplete_color)
-    async def setcolor_slash(self, interaction: discord.Interaction, color: str):
+    async def setcolor_slash(self, interaction: discord.Interaction, color: str, all: bool = False):
         await interaction.response.defer()
-        response = await self._setcolor(interaction.channel.id, interaction.user, color)
+        response = await self._setcolor(interaction.channel.id, interaction.user, color, all)
         if response is not None:
             await interaction.followup.send(response)
 
