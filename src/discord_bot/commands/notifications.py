@@ -29,7 +29,8 @@ async def send_new_items(bot, session, player) :
                 AnsiText(item.player_sending.player_name, color=item.player_sending.color),
                 AnsiText(item.location_name)
             )
-        table.send(user.dm_channel)
+        await table.send(user.dm_channel)
+        session.bot_client.logger.info(f"New items sent to {player.player_name} in DM.")
         
 class NotificationCog(commands.Cog):
     def __init__(self, bot):
