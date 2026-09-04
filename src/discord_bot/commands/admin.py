@@ -196,6 +196,8 @@ Please delete the existing world before creating a new one or use a different no
                 new_value = int(new_value)
             elif isinstance(current_value, list):
                 new_value = [int(x.strip()) for x in new_value.split(",")]
+            elif isinstance(current_value, str):
+                new_value = str(new_value)
             elif current_value is None:
                 if new_value.lower() == "null":
                     new_value = None
