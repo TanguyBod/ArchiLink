@@ -25,6 +25,7 @@ class PlayerDB :
                     ) -> Player :
         if player_slot in self.players_by_slot:
             raise ValueError(f"Player slot {player_slot} already exists.")
+        player_slot = int(player_slot)
         player = Player(int(player_slot), player_game, player_name, discord_id, color_restricted=color_restricted)
         self.players_by_slot[player_slot] = player
         self.players_by_name[player_name] = player
@@ -36,7 +37,7 @@ class PlayerDB :
         return list(self.players_by_name.values())
 
     def get_player_by_slot(self, player_slot : int) -> Player :
-        return self.players_by_slot.get(player_slot)
+        return self.players_by_slot.get(int(player_slot))
 
     def get_player_by_name(self, player_name : str) -> Player :
         return self.players_by_name.get(player_name)
@@ -73,7 +74,7 @@ class PlayerDB :
                 data = json.load(f)
                 for player_name, player_data in data.items():
                     player = Player.load(player_data)
-                    self.players_by_slot[player.player_slot] = player
+                    self.players_by_slot[int(player.player_slot)] = player
                     self.players_by_name[player.player_name] = player
                     if player.discord_id is not None:
                         self.players_by_discord[player.discord_id] = player
