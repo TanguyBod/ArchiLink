@@ -209,12 +209,12 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
             if player is None :
                 self.logger.warning(f"Player in slot {player_slot} not found in player_db, cannot process Part message.")
                 return
-            if self.send_join_part_messages :
+            if self.send_join_part_messages and player.is_playing:
                 await self.messages_to_send.put((f"```ansi\nPlayer {player.name_colored} stopped playing {player.player_game}.```", "normal"))
-            if player.is_playing :
                 player.is_playing = False
                 time_played = time.time() - player.time_joined
                 player.time_played += time_played
+                player.time_joined = 0
                 self.logger.info(f"Player {player.player_name} in slot {player_slot} played for {time_played:.2f} seconds, total time played : {player.time_played:.2f} seconds.")
             else :
                 self.logger.warning(f"Received Part message for player {player.player_name} in slot {player_slot} but player was not marked as playing.")

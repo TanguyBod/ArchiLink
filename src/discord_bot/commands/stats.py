@@ -6,6 +6,7 @@ from io import BytesIO
 from discord.ext import commands
 from discord import app_commands
 import discord
+import time
 
 class StatsCog(commands.Cog):
     def __init__(self, bot):
@@ -16,6 +17,9 @@ class StatsCog(commands.Cog):
         if session is None or discord_profil is None :
             return "No session or discord profile found. Please make sure you are in a valid game session and registered."
         player = discord_profil.current_slot
+        if player.is_playing:
+            player.time_played += time.time() - player.time_joined
+            player.time_joined = time.time()
         time_played = player.time_played
         hours = int(time_played // 3600)
         minutes = int((time_played % 3600) // 60)
