@@ -125,6 +125,26 @@ class ArchipelagoClient(ABC) :
             last_port = str(roomjson["last_port"])
             if last_port != self.client_port :
                 self.logger.warning(f"Port for room {room_id} has changed from {self.client_port} to {last_port}. Updating client port.")
+                # Send a message to the discord channel to inform users that the port has changed
+                if self.config["AdvancedConfig"].get("discord_channel_id", None) is not None:
+                    discord_channel_id = self.config["AdvancedConfig"]["discord_channel_id"]
+                    discord_message = f"Port for room {room_id} has changed from {self.client_port} to {last_port}. Updating client port."
+                    # Send the message to the discord channel using the discord bot
+                    if self.config["AdvancedConfig"].get("discord_bot_token", None) is not None:
+                        discord_bot_token = self.config["AdvancedConfig"]["discord_bot_token"]
+                        discord_api_url = f"https://discord.com/api/v9/channels/{discord_channel_id}/messages"
+                        headers = {
+                            "Authorization": f"Bot {discord_bot_token}",
+                            "Content-Type": "application/json"
+                        }
+                        payload = {
+                            "content": discord_message
+                        }
+                        response = requests.post(discord_api_url, headers=headers, json=payload)
+                        if response.status_code == 200:
+                            self.logger.info(f"Sent message to Discord channel {discord_channel_id}: {discord_message}")
+                        else:
+                            self.logger.error(f"Failed to send message to Discord channel {discord_channel_id}. Status code: {response.status_code}, Response: {response.text}")
                 self.client_port = last_port
                 self.config["ArchipelagoConfig"]["client_port"] = last_port
         except Exception as e :
