@@ -222,8 +222,30 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
             else :
                 msg = f"```ansi\n🏆 Player {player_goaling.name_colored} has reached their goal in {player_goaling.player_game} !\n```"
             await self.messages_to_send.put((msg, "normal"))
+        elif message["type"] == "Release" :
+            self.logger.debug(f"Received Release message : {message['data']}")
+            player_releasing = self.player_db.get_player_by_slot(int(message["slot"]))
+            if player_releasing is None :
+                self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Release message.")
+                return
+            if player.allow_ping :
+                msg = f"```ansi\n💨 <@{player_releasing.discord_id}> ({player_releasing.name_colored}) has released the remaining items in his world ({player_releasing.player_game}) !\n```"
+            else :
+                msg = f"```ansi\n💨 Player {player_releasing.name_colored} has released the remaining items in his world ({player_releasing.player_game}) !\n```"
+            await self.messages_to_send.put((msg, "normal"))
+        elif message["type"] == "Collect" :
+            self.logger.debug(f"Received Collect message : {message['data']}")
+            player_collecting = self.player_db.get_player_by_slot(int(message["slot"]))
+            if player_collecting is None :
+                self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Collect message.")
+                return
+            if player.allow_ping :
+                msg = f"```ansi\n📦 <@{player_collecting.discord_id}> ({player_collecting.name_colored}) has collected all items in his world ({player_collecting.player_game}) !\n```"
+            else :
+                msg = f"```ansi\n📦 Player {player_collecting.name_colored} has collected all items in his world ({player_collecting.player_game}) !\n```"
+            await self.messages_to_send.put((msg, "normal"))
         else :
-            self.logger.debug(f"Unknown message type : {message['type']} --> \n {message}")
+            self.logger.info(f"Unknown message type : {message['type']} --> \n {message}")
             
     async def process_retrieved_message(self, message: dict) -> None :
         # Hints are in a list in the keys field of the message in the first key of the data dict :
