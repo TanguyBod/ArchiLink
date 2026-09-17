@@ -58,33 +58,24 @@ class BotClient(ArchipelagoClient) :
                         await file.write(json.dumps(self.datapackage, indent=2, ensure_ascii=False))
                     self.datapackage_reversed = True
                 elif message["cmd"] == "Connected" :
-                    if self.player_db.loaded_from_file :
-                        self.logger.info("PlayerDB loaded from file, checking if players need to be updated.")
-                        for slot, slot_info in message["slot_info"].items() :
-                            player_slot = int(slot)
-                            player_game = slot_info["game"]
-                            player_name = slot_info["name"]
-                            if player_game == "Archipelago" :
-                                continue
-                            player = self.player_db.get_player_by_slot(player_slot)
-                            if player is None :
-                                self.logger.debug(f"Player in slot {player_slot} not found in player_db, creating new player {player_name} playing {player_game}.")
-                                self.player_db.create_player(player_slot, player_game, player_name, color_restricted = self.config["AdvancedConfig"].get("player_colors_limited", False))
-                            else :
-                                if player.player_name != player_name or player.player_game != player_game :
-                                    self.logger.info(f"Player in slot {player_slot} has updated info, updating player {player_name} playing {player_game}.")
-                                    # Update player's name and game
-                                    player.player_name = player_name
-                                    player.player_game = player_game
-                    else :
-                        for slot, slot_info in message["slot_info"].items() :
-                            player_slot = int(slot)
-                            player_game = slot_info["game"]
-                            player_name = slot_info["name"]
-                            if player_game == "Archipelago" :
-                                continue
-                            self.logger.info(f"Creating player {player_name} in slot {player_slot} playing {player_game}.")
+                    # Retrieve all players in the player_db and update their info if needed, or create them if they don't exist
+                    self.logger.info("Connected to the server, retrieving players info from messages and updating player_db.")
+                    for slot, slot_info in message["slot_info"].items() :
+                        player_slot = int(slot)
+                        player_game = slot_info["game"]
+                        player_name = slot_info["name"]
+                        if player_game == "Archipelago" :
+                            continue
+                        player = self.player_db.get_player_by_slot(player_slot)
+                        if player is None :
+                            self.logger.info(f"Player in slot {player_slot} not found in player_db, creating new player {player_name} playing {player_game}.")
                             self.player_db.create_player(player_slot, player_game, player_name, color_restricted = self.config["AdvancedConfig"].get("player_colors_limited", False))
+                        else :
+                            if player.player_name != player_name or player.player_game != player_game :
+                                self.logger.info(f"Player in slot {player_slot} has updated info, updating player {player_name} playing {player_game}.")
+                                # Update player's name and game
+                                player.player_name = player_name
+                                player.player_game = player_game
                 elif message["cmd"] == "PrintJSON" :
                     await self.process_json_message(message)
                 elif message["cmd"] == "Bounced" :
@@ -219,7 +210,18 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
             else :
                 self.logger.warning(f"Received Part message for player {player.player_name} in slot {player_slot} but player was not marked as playing.")
         elif message["type"] == "Tutorial" :
-            self.logger.info(f"Received Tutorial message : {message['data']}")
+            self.logger.debug(f"Received Tutorial message : {message['data']}")
+        elif message["type"] == "Goal" :
+            self.logger.debug(f"Received Goal message : {message['data']}")
+            player_goaling = self.player_db.get_player_by_slot(int(message["slot"]))
+            if player_goaling is None :
+                self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Goal message.")
+                return
+            if player.allow_ping :
+                msg = f"```ansi\n🏆 <@{player_goaling.discord_id}> ({player_goaling.name_colored}) has reached their goal in {player_goaling.player_game} !\n```"
+            else :
+                msg = f"```ansi\n🏆 Player {player_goaling.name_colored} has reached their goal in {player_goaling.player_game} !\n```"
+            await self.messages_to_send.put((msg, "normal"))
         else :
             self.logger.debug(f"Unknown message type : {message['type']} --> \n {message}")
             

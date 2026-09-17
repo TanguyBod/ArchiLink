@@ -126,6 +126,7 @@ class ArchipelagoClient(ABC) :
             if last_port != self.client_port :
                 self.logger.warning(f"Port for room {room_id} has changed from {self.client_port} to {last_port}. Updating client port.")
                 # Send a message to the discord channel to inform users that the port has changed
+                self.logger.info(f"Sending message to discord channel : {self.config['AdvancedConfig'].get('discord_channel_id', None)}.")
                 if self.config["AdvancedConfig"].get("discord_channel_id", None) is not None:
                     discord_channel_id = self.config["AdvancedConfig"]["discord_channel_id"]
                     discord_message = f"Port for room {room_id} has changed from {self.client_port} to {last_port}. Updating client port."
