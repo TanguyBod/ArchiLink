@@ -6,6 +6,7 @@ import logging
 import requests
 from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosedOK
+import os
 
 class ArchipelagoClient(ABC) :
     version : dict[str, any] = {"major": 0, "minor": 6, "build": 7, "class": "Version"}
@@ -126,13 +127,13 @@ class ArchipelagoClient(ABC) :
             if last_port != self.client_port :
                 self.logger.warning(f"Port for room {room_id} has changed from {self.client_port} to {last_port}. Updating client port.")
                 # Send a message to the discord channel to inform users that the port has changed
-                self.logger.info(f"Sending message to discord channel : {self.config['AdvancedConfig'].get('discord_channel_id', None)}.")
-                if self.config["AdvancedConfig"].get("discord_channel_id", None) is not None:
-                    discord_channel_id = self.config["AdvancedConfig"]["discord_channel_id"]
+                self.logger.info(f"Sending message to discord channel : {self.config['DiscordConfig'].get('discord_channel_id', None)}.")
+                if self.config["DiscordConfig"].get("discord_channel_id", None) is not None:
+                    discord_channel_id = self.config["DiscordConfig"]["discord_channel_id"]
                     discord_message = f"Port for room {room_id} has changed from {self.client_port} to {last_port}. Updating client port."
                     # Send the message to the discord channel using the discord bot
-                    if self.config["AdvancedConfig"].get("discord_bot_token", None) is not None:
-                        discord_bot_token = self.config["AdvancedConfig"]["discord_bot_token"]
+                    discord_bot_token = os.getenv("DISCORD_COMMAND_PREFIX")
+                    if discord_bot_token is not None:   
                         discord_api_url = f"https://discord.com/api/v9/channels/{discord_channel_id}/messages"
                         headers = {
                             "Authorization": f"Bot {discord_bot_token}",
