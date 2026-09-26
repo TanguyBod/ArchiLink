@@ -212,8 +212,8 @@ Please delete the existing world before creating a new one or use a different no
                     new_value = None
             session.bot_client.config[section][key_to_change] = new_value
             # Restart the bot client to apply the new configuration
-            self.bot.world_manager.restart_bot_client(session.world_id)
-            return f"Configuration updated: {key_to_change} is now set to {new_value}"
+            await self.bot.world_manager.restart_world(session.world_id)
+            return f"Configuration updated: {key_to_change} is now set to {new_value}. \nThe bot will restart to apply the new configuration."
         except Exception as e:
             self.bot.custom_logger.error(f"Error changing configuration: {e}")
             return f"An error occurred while changing the configuration. Please make sure the new value is of the correct type and try again."
