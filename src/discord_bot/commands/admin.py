@@ -171,7 +171,16 @@ Please delete the existing world before creating a new one or use a different no
             if session.bot_client.running:
                 return "Bot is already active and tracking this world."
             session.tasks.append(asyncio.create_task(session.bot_client.start()))
-            return "Bot activated. Tracking started for this world."
+            for i in range(10) : # Wait for a maximum of 10 seconds for the bot to connect to the server
+                if session.bot_client.connected:
+                    break
+                await asyncio.sleep(1)
+            if not session.bot_client.connected :
+                await session.bot_client.stop()
+                return "Bot failed to connect to the server. Is the server running ? If the server is hosted on archipelago.gg please make sure the room is active (by refeshing the room page)."
+            else :
+                self.bot.custom_logger.info(f"Bot activated for world {session.world_id}")
+                return "Bot activated. Tracking started for this world."
         except Exception as e:
             self.bot.custom_logger.error(f"Error activating bot: {e}")
             return f"An error occurred while activating the bot. Please try again later."

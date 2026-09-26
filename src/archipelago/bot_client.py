@@ -60,6 +60,7 @@ class BotClient(ArchipelagoClient) :
                 elif message["cmd"] == "Connected" :
                     # Retrieve all players in the player_db and update their info if needed, or create them if they don't exist
                     self.logger.info("Connected to the server, retrieving players info from messages and updating player_db.")
+                    self.connected = True
                     for slot, slot_info in message["slot_info"].items() :
                         player_slot = int(slot)
                         player_game = slot_info["game"]

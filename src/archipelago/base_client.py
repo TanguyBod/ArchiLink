@@ -34,6 +34,7 @@ class ArchipelagoClient(ABC) :
         self.failed_connection_attempts = 0
         self.config = config
         self.hint_client = False
+        self.connected = False
     
     async def connect(self) :
         if self.self_hosted :
@@ -68,6 +69,7 @@ class ArchipelagoClient(ABC) :
         await self.send_message(payload)
         
     async def run(self):
+        self.failed_connection_attempts = 0
         while self.running:
             try:
                 self.logger.info("Connecting to Archipelago server at " + self.client_url + ":" + self.client_port)
@@ -91,6 +93,7 @@ class ArchipelagoClient(ABC) :
             except ConnectionClosedOK:
                 self.logger.info("Connection closed gracefully.")
                 self.running = False
+                self.connected = False
                 if not self.hint_client:
                     await self.message_queue.put({"cmd": "Stop"})
                     await asyncio.sleep(10)
@@ -98,20 +101,20 @@ class ArchipelagoClient(ABC) :
             except asyncio.CancelledError:
                 self.logger.info("Archipelago client shutting down...")
                 self.running = False
+                self.connected = False
                 # nettoyage éventuel
                 if self.ap_connection:
                     await self.ap_connection.close()
                 raise
             except Exception as e:
                 self.logger.error(f"Connection error: {e}")
-                await asyncio.sleep(60)  # Wait before trying to reconnect
+                await asyncio.sleep(5)  # Wait before trying to reconnect
                 self.failed_connection_attempts += 1
-                # If more than 5 failed connection attempts and not self-hosted, stop trying to reconnect
+                # If more than 2 failed connection attempts and not self-hosted, stop trying to reconnect
                 # This is to prevent infinite reconnection attempts if the server is down or the URL is incorrect
-                if self.failed_connection_attempts >= 5:
-                    if not self.self_hosted:
-                        self.logger.error("Too many failed connection attempts. Stopping reconnection attempts.")
-                        await self.stop()
+                if self.failed_connection_attempts >= 2:
+                    self.logger.error("Too many failed connection attempts. Stopping reconnection attempts.")
+                    await self.stop()
         self.logger.info("Archipelago tracker stopped on endpoint " + self.client_url + ":" + self.client_port)
 
     async def checkPort(self) :
@@ -155,6 +158,7 @@ class ArchipelagoClient(ABC) :
     async def stop(self):
         self.logger.info(f"Stopping Archipelago tracking on endpoint {self.client_url}:{self.client_port}")
         self.running = False
+        self.connected = False
         await self.message_queue.put({"cmd": "Stop"})
         # Wait message queue to be empty before cancelling workers
         counter = 0 # Wait for a maximum of 5 seconds (20 * 0.5s) for the message queue to be empty
@@ -163,16 +167,13 @@ class ArchipelagoClient(ABC) :
             counter += 1
         for task in self.worker_tasks:
             task.cancel()
-        await asyncio.gather(*self.worker_tasks,
-                            return_exceptions=True)
-
+        await asyncio.gather(*self.worker_tasks,return_exceptions=True)
         self.worker_tasks.clear()
         self.workers_started = False
         if self.ap_connection:
             await self.ap_connection.close()
             self.ap_connection = None
         self.message_queue = asyncio.Queue(maxsize=2000)
-        self.failed_connection_attempts = 0
             
     async def start(self) :
         if self.running:
