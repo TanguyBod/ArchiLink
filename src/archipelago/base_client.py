@@ -105,6 +105,7 @@ class ArchipelagoClient(ABC) :
                 # nettoyage éventuel
                 if self.ap_connection:
                     await self.ap_connection.close()
+                await self.stop() # Stop the client and clean up resources
                 raise
             except Exception as e:
                 self.logger.error(f"Connection error: {e}")
