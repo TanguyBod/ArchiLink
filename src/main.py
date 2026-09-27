@@ -51,6 +51,22 @@ async def main():
         ]
         await asyncio.gather(*tasks)
     
+    except asyncio.CancelledError:
+        logger.warning("Main task was cancelled.")
+        raise
+
+    except Exception as e:
+        logger.exception("Fatal exception in main() : %s", e)
+        for task in tasks:
+            logger.error(
+                "Task %s: done=%s cancelled=%s exception=%r",
+                task.get_name(),
+                task.done(),
+                task.cancelled(),
+                task.exception() if task.done() and not task.cancelled() else None
+            )
+        raise
+    
     finally :
         logger.info("Shutting down, stopping all worlds...")
         # Close auto-save task

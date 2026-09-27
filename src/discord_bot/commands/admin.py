@@ -177,7 +177,7 @@ Please delete the existing world before creating a new one or use a different no
                 await asyncio.sleep(1)
             if not session.bot_client.connected :
                 await session.bot_client.stop()
-                return "Bot failed to connect to the server. Is the server running ? If the server is hosted on archipelago.gg please make sure the room is active (by refeshing the room page)."
+                return "Bot failed to connect to the server. Is the server running ? If the server is hosted on archipelago.gg please make sure the room is active (by refreshing the room page)."
             else :
                 self.bot.custom_logger.info(f"Bot activated for world {session.world_id}")
                 return "Bot activated. Tracking started for this world."
