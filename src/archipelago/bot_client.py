@@ -25,7 +25,6 @@ class BotClient(ArchipelagoClient) :
         self.player_db = PlayerDB(datadir+"/players.json")
         self.discord_db = DiscordDB(datadir+"/discord_profiles.json", self.player_db)
         self.datapackage = None
-        self.datapackage_reversed = False 
         self.lock = asyncio.Lock() # Lock to protect shared resources
         self.workers_started = False
         self.messages_to_send = message_queue
@@ -38,6 +37,12 @@ class BotClient(ArchipelagoClient) :
         self.send_join_part_messages = config["AdvancedConfig"].get("send_join_leave_messages", True)
         self.items_handling_level = config["AdvancedConfig"].get("item_display_level", 1) # 0 = no item, 1 = all, 2 = Progression and useful, 3 = Progression only
         self.traps = config["AdvancedConfig"].get("display_traps", True) # Whether to include traps in item display
+        self.checksums_path = os.path.join(datadir, "checksums.json")
+        if os.path.exists(self.checksums_path) :
+            with open(self.checksums_path, "r", encoding="utf-8") as f:
+                self.checksums = json.load(f)
+        else :
+            self.checksums = {}
     
     async def process_messages(self):
         while self.running:
@@ -45,18 +50,27 @@ class BotClient(ArchipelagoClient) :
                 message = await self.message_queue.get()
                 self.logger.debug(f"Processing message: {message}")
                 if message["cmd"] == "RoomInfo" :
-                    # Check DataPackage and send connect
-                    await self.check_data_package()
+                    checksums = message["datapackage_checksums"]
+                    for game, checksum in checksums.items() :
+                        if game not in self.checksums or self.checksums[game] != checksum:
+                            self.checksums[game] = checksum
+                            await self.request_datapackage(game)
                     await self.send_connect()
                 elif message["cmd"] == "DataPackage" :
+                    print(f"Received DataPackage : {message}")
                     # save DataPackage in a json, needed if bot is restarted
-                    async with aiofiles.open(self.datapackage_path, "w", encoding="utf-8") as file:
-                        await file.write(json.dumps(message, indent=2, ensure_ascii=False))
-                    self.datapackage = message
-                    await self.build_reverse_data_dict()
+                    game_name = next(iter(message["data"]["games"]))
+                    if self.datapackage is None :
+                        self.datapackage = {"cmd": "DataPackage", "data" : {"games" : {}}}
+                    reversed = {"id_to_item_name": {}, "id_to_location_name": {}}
+                    for item_name, item_id in message["data"]["games"][game_name]["item_name_to_id"].items() :
+                        reversed["id_to_item_name"][str(item_id)] = item_name
+                    for location_name, location_id in message["data"]["games"][game_name]["location_name_to_id"].items() :
+                        reversed["id_to_location_name"][str(location_id)] = location_name
+                    self.datapackage["data"]["games"][game_name] = reversed
+                    self.logger.info(f"DataPackage received for game {game_name}.")
                     async with aiofiles.open(self.reversed_datapackage_path, "w", encoding="utf-8") as file:
                         await file.write(json.dumps(self.datapackage, indent=2, ensure_ascii=False))
-                    self.datapackage_reversed = True
                 elif message["cmd"] == "Connected" :
                     # Retrieve all players in the player_db and update their info if needed, or create them if they don't exist
                     self.logger.info("Connected to the server, retrieving players info from messages and updating player_db.")
@@ -316,17 +330,50 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
         self.logger.debug(f"Item {item.item_name} not found in {item.player_sending.player_name} todolist, not removed.")
         return False
 
-    async def check_data_package(self) -> None :
+    async def check_data_package(self, games: list[str]) -> None :
         self.logger.info("-- Checking DataPackage.")
         if os.path.exists(self.reversed_datapackage_path) :
             self.datapackage_reversed = True
             async with aiofiles.open(self.reversed_datapackage_path, "r") as f:
                 self.datapackage = json.loads(await f.read())
-            return
+            try :
+                games = self.datapackage["data"]["games"]
+                if games is None or games == {} :
+                    self.logger.warning("Reversed datapackage is empty, requesting new datapackage from server.")
+                    self.datapackage_reversed = False
+                else :
+                    self.logger.info("Reversed datapackage loaded from file.")
+            except Exception as e : 
+                self.logger.warning(f"Error reading reversed datapackage, requesting new datapackage from server. Error : {e}")
+                self.datapackage_reversed = False
+        if not self.datapackage_reversed :
+            payload = {
+                'cmd': 'GetDataPackage',
+                'games': games
+            }
+            await self.send_message(payload)
+        return
+    
+    async def request_datapackage(self, game: str) -> None :
+        self.logger.info(f"-- Requesting DataPackage for game {game}.")
         payload = {
-            'cmd': 'GetDataPackage'
+            'cmd': 'GetDataPackage',
+            'games': [game]
         }
         await self.send_message(payload)
+        
+    async def init_datapackage(self) -> None :
+        if os.path.exists(self.reversed_datapackage_path) :
+            async with aiofiles.open(self.reversed_datapackage_path, "r") as f:
+                self.datapackage = json.loads(await f.read())
+            self.logger.info("Reversed datapackage loaded from file.")
+        elif os.path.exists(self.datapackage_path) :
+            async with aiofiles.open(self.datapackage_path, "r") as f:
+                self.datapackage = json.loads(await f.read())
+            self.logger.info("Datapackage loaded from file.")
+            await self.build_reverse_data_dict()
+            async with aiofiles.open(self.reversed_datapackage_path, "w", encoding="utf-8") as file:
+                await file.write(json.dumps(self.datapackage, indent=2, ensure_ascii=False))
             
     async def build_reverse_data_dict(self):
         """
@@ -360,6 +407,10 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
         # Save config to file
         async with aiofiles.open(self.json_config_path, "w", encoding="utf-8") as f:
             await f.write(json.dumps(self.config, indent=4, ensure_ascii=False))
+        async with aiofiles.open(self.checksums_path, "w", encoding="utf-8") as f:
+            await f.write(json.dumps(self.checksums, indent=4, ensure_ascii=False))
+        async with aiofiles.open(self.reversed_datapackage_path, "w", encoding="utf-8") as f:
+            await f.write(json.dumps(self.datapackage, indent=4, ensure_ascii=False))
             
     async def retrieve_available_hints(self, player_slot: int, team_slot: int = 0) :
         payload = {
