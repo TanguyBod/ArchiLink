@@ -30,29 +30,29 @@ class WorldConfigSelection(discord.ui.View):
             return False
         return True
 
-    # Manual configuration button opens the ConfigWizardView
-    @discord.ui.button(label="Manual Configuration", style=discord.ButtonStyle.green)
-    async def manual(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.blocked:
-            return
-        self.blocked = True
-        view = ConfigWizardView(data=self.data)
-        step_name = STEPS[0]
-        embed = discord.Embed(
-            title="⚙️ Configuration - ArchipelagoConfig",
-            description=f"There are 3 steps to configure a new multiworld instance. Use the buttons to navigate and edit each section.\
-\nYou have 10 minutes to complete the configuration, after that the wizard will expire and you will need to start again.\
-\nCurrently on step 1/3: {step_name}",
-            color=0x00ffcc
-        )
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
-        # Block until the view is stopped, then check if data is complete and create the multiworld instance
-        await view.wait()
-        if view.data is None:
-            await interaction.followup.send("Configuration cancelled or timed out.", ephemeral=True)
-            return
-        self.data.update(view.data)
-        self.stop()
+#     # Manual configuration button opens the ConfigWizardView
+#     @discord.ui.button(label="Manual Configuration", style=discord.ButtonStyle.green)
+#     async def manual(self, interaction: discord.Interaction, button: discord.ui.Button):
+#         if self.blocked:
+#             return
+#         self.blocked = True
+#         view = ConfigWizardView(data=self.data)
+#         step_name = STEPS[0]
+#         embed = discord.Embed(
+#             title="⚙️ Configuration - ArchipelagoConfig",
+#             description=f"There are 3 steps to configure a new multiworld instance. Use the buttons to navigate and edit each section.\
+# \nYou have 10 minutes to complete the configuration, after that the wizard will expire and you will need to start again.\
+# \nCurrently on step 1/3: {step_name}",
+#             color=0x00ffcc
+#         )
+#         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+#         # Block until the view is stopped, then check if data is complete and create the multiworld instance
+#         await view.wait()
+#         if view.data is None:
+#             await interaction.followup.send("Configuration cancelled or timed out.", ephemeral=True)
+#             return
+#         self.data.update(view.data)
+#         self.stop()
         
     # Import from file button (Ask user to upload a JSON file, then parse it and create multiworld instance)
     @discord.ui.button(label="Import JSON", style=discord.ButtonStyle.blurple)
