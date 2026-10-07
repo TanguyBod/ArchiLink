@@ -57,7 +57,6 @@ class BotClient(ArchipelagoClient) :
                             await self.request_datapackage(game)
                     await self.send_connect()
                 elif message["cmd"] == "DataPackage" :
-                    print(f"Received DataPackage : {message}")
                     # save DataPackage in a json, needed if bot is restarted
                     game_name = next(iter(message["data"]["games"]))
                     if self.datapackage is None :
@@ -232,7 +231,7 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
             if player_goaling is None :
                 self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Goal message.")
                 return
-            if player.allow_ping :
+            if player_goaling.allow_ping :
                 msg = f"```ansi\n🏆 <@{player_goaling.discord_id}> ({player_goaling.name_colored}) has reached their goal in {player_goaling.player_game} !\n```"
             else :
                 msg = f"```ansi\n🏆 Player {player_goaling.name_colored} has reached their goal in {player_goaling.player_game} !\n```"
@@ -243,7 +242,7 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
             if player_releasing is None :
                 self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Release message.")
                 return
-            if player.allow_ping :
+            if player_releasing.allow_ping :
                 msg = f"```ansi\n💨 <@{player_releasing.discord_id}> ({player_releasing.name_colored}) has released the remaining items in his world ({player_releasing.player_game}) !\n```"
             else :
                 msg = f"```ansi\n💨 Player {player_releasing.name_colored} has released the remaining items in his world ({player_releasing.player_game}) !\n```"
@@ -254,7 +253,7 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
             if player_collecting is None :
                 self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Collect message.")
                 return
-            if player.allow_ping :
+            if player_collecting.allow_ping :
                 msg = f"```ansi\n📦 <@{player_collecting.discord_id}> ({player_collecting.name_colored}) has collected all items in his world ({player_collecting.player_game}) !\n```"
             else :
                 msg = f"```ansi\n📦 Player {player_collecting.name_colored} has collected all items in his world ({player_collecting.player_game}) !\n```"
