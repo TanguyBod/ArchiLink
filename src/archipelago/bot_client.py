@@ -43,6 +43,9 @@ class BotClient(ArchipelagoClient) :
                 self.checksums = json.load(f)
         else :
             self.checksums = {}
+        if os.path.exists(self.reversed_datapackage_path) :
+            with open(self.reversed_datapackage_path, "r", encoding="utf-8") as f:
+                self.datapackage = json.load(f)
     
     async def process_messages(self):
         while self.running:
