@@ -15,6 +15,8 @@ class ArchipelagoClient(ABC) :
     def __init__(self, config: dict[str, any], logger: logging.Logger) :
         self.client_url : str = str(config["ArchipelagoConfig"]["client_url"])
         self.client_port : str = str(config["ArchipelagoConfig"]["client_port"])
+        if ":" in self.client_port :
+            self.client_port = str(self.client_port.replace(":", ""))
         self.self_hosted : bool = bool(config["ArchipelagoConfig"]["self_hosted"])
         if not self.self_hosted :
             self.room_url : str = str(config["ArchipelagoConfig"]["room_url"])
