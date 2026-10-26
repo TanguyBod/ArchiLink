@@ -247,9 +247,9 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
                 self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Release message.")
                 return
             if player_releasing.allow_ping :
-                msg = f"```ansi\n💨 <@{player_releasing.discord_id}> ({player_releasing.name_colored}) has released the remaining items in his world ({player_releasing.player_game}) !\n```"
+                msg = f"```ansi\n💨 <@{player_releasing.discord_id}> ({player_releasing.name_colored}) has released the remaining items in their world ({player_releasing.player_game}) !\n```"
             else :
-                msg = f"```ansi\n💨 Player {player_releasing.name_colored} has released the remaining items in his world ({player_releasing.player_game}) !\n```"
+                msg = f"```ansi\n💨 Player {player_releasing.name_colored} has released the remaining items in their world ({player_releasing.player_game}) !\n```"
             await self.messages_to_send.put((msg, "normal"))
         elif message["type"] == "Collect" :
             self.logger.debug(f"Received Collect message : {message['data']}")
@@ -258,9 +258,9 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
                 self.logger.warning(f"Player in slot {message['slot']} not found in player_db, cannot process Collect message.")
                 return
             if player_collecting.allow_ping :
-                msg = f"```ansi\n📦 <@{player_collecting.discord_id}> ({player_collecting.name_colored}) has collected all items in his world ({player_collecting.player_game}) !\n```"
+                msg = f"```ansi\n📦 <@{player_collecting.discord_id}> ({player_collecting.name_colored}) has collected all items in their world ({player_collecting.player_game}) !\n```"
             else :
-                msg = f"```ansi\n📦 Player {player_collecting.name_colored} has collected all items in his world ({player_collecting.player_game}) !\n```"
+                msg = f"```ansi\n📦 Player {player_collecting.name_colored} has collected all items in their world ({player_collecting.player_game}) !\n```"
             await self.messages_to_send.put((msg, "normal"))
         else :
             self.logger.info(f"Unknown message type : {message['type']} --> \n {message}")
