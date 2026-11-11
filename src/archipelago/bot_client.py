@@ -36,6 +36,7 @@ class BotClient(ArchipelagoClient) :
         self.hint_results = {}
         self.send_join_part_messages = config["AdvancedConfig"].get("send_join_leave_messages", True)
         self.items_handling_level = config["AdvancedConfig"].get("item_display_level", 1) # 0 = no item, 1 = all, 2 = Progression and useful, 3 = Progression only
+        self.ping_all_items = config["AdvancedConfig"].get("ping_all_items", False) # Whether to ping all items or not
         self.traps = config["AdvancedConfig"].get("display_traps", True) # Whether to include traps in item display
         self.checksums_path = os.path.join(datadir, "checksums.json")
         if os.path.exists(self.checksums_path) :
@@ -183,7 +184,10 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
                 async with self.lock:
                     item_sent.player_recieving.new_items.append(item_sent)
             item_sent.player_sending.checked_locations += 1 # Keep track of number of checks locations
-            await self.remove_item_from_todolist(item_sent)
+            if not self.ping_all_items :
+                await self.remove_item_from_todolist(item_sent)
+            else :
+                await self.ping_item(item_sent)
             if item_filter(item_sent.flag, self.items_handling_level, self.traps) :
                 await self.messages_to_send.put((msg_str, "item_send"))
             
@@ -332,7 +336,12 @@ If it's not related to archipelago.gg inactivity, it is the self-hosted instance
                 return True
         self.logger.debug(f"Item {item.item_name} not found in {item.player_sending.player_name} todolist, not removed.")
         return False
-
+    
+    async def ping_item(self, item: Item) -> None :
+        player_receiving = item.player_recieving
+        msg_str = f"<@{player_receiving.discord_id}> ({player_receiving.player_name}) received {item.item_name} from {item.player_sending.player_name} at {item.location_name}."
+        await self.ping_queue.put(msg_str)
+        
     async def check_data_package(self, games: list[str]) -> None :
         self.logger.info("-- Checking DataPackage.")
         if os.path.exists(self.reversed_datapackage_path) :

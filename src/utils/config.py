@@ -42,7 +42,8 @@ def check_config(data) :
             "deathlink_messages_in_thread",
             "send_join_leave_messages",
             "item_display_level",
-            "display_traps"
+            "display_traps",
+            "ping_all_items"
         ]    
         for field in advanced_config_fields:
             if field not in data["AdvancedConfig"]:
@@ -90,4 +91,6 @@ def complete_config(data) :
         data["DiscordConfig"]["ping_channel_id"] = None
     if "bot_slot" not in data["ArchipelagoConfig"]:
         data["ArchipelagoConfig"]["bot_slot"] = "ArchiLink"
+    if "ping_all_items" not in data["AdvancedConfig"]:
+        data["AdvancedConfig"]["ping_all_items"] = False
     return data
