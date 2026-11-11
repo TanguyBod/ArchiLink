@@ -260,6 +260,16 @@ This option filter which items are relayed by the bot with the folowwing configu
 |2|Progressive + Useful|
 |3|Progressive only|
 
+---
+
+## `ping_all_items`
+```json
+"ping_all_items": false
+```
+
+Enabling this option will make the bot ping all items as if they all are in your wishlist.
+
+---
 
 # Full Example
 
@@ -285,7 +295,8 @@ This option filter which items are relayed by the bot with the folowwing configu
         "item_messages_in_thread" : false,
         "deathlink_messages_in_thread" : false,
         "send_join_leave_messages" : true,
-        "item_display_level" : 1
+        "item_display_level" : 1,
+        "ping_all_items" : false
     }
 }
 ```

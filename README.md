@@ -55,10 +55,10 @@ These commands are used to create and manage Archipelago multiworld instances.
 
 | Command | Description |
 |--------|------------|
-| `!newWorld` | Initialize the bot to follow an Archipelago multiworld. Two configuration methods are available: manual configuration or uploading a `config.json` file. This command can be used in any channel. |
-| `!fastConfig <ip> <port> <password (optional)>` | Quickly create a new multiworld using a default configuration. |
-| `!deleteWorld` | Delete the world associated with the current channel. The bot will stop tracking this multiworld. This command can only be used by administrators when admins are configured, to prevent accidental deletion. |
-| `!activate` | Restart tracking of the current world after a connection issue (for example after Archipelago inactivity). |
+| `/newWorld` | Initialize the bot to follow an Archipelago multiworld. Two configuration methods are available: manual configuration or uploading a `config.json` file. This command can be used in any channel. |
+| `/fastConfig <ip> <port> <password (optional)>` | Quickly create a new multiworld using a default configuration. |
+| `/deleteWorld` | Delete the world associated with the current channel. The bot will stop tracking this multiworld. This command can only be used by administrators when admins are configured, to prevent accidental deletion. |
+| `/activate` | Restart tracking of the current world after a connection issue (for example after Archipelago inactivity). |
 ---
 
 - Once a world is created, players can interact with it using the following commands.
@@ -71,11 +71,11 @@ These commands allow Discord users to link their account to one or more Archipel
 
 | Command | Description |
 |--------|------------|
-| `!register <player_name>` | Link your Discord account to a player. You will receive notifications about this player's items and gain access to player-specific commands such as `!todo`, `!wishlist`, and `!new`. You can register to multiple players. |
-| `!unregister [player_name]` | Unlink your Discord account from a player. If no player is specified, unregister from all linked players. |
-| `!players` | Display the list of all players in the current multiworld. |
-| `!current` | Display the player slot currently being tracked. This slot is used by commands such as `!todo`, `!hint`, and `!wishlist`. |
-| `!switch [player_name]` | Change the currently tracked player. Without an argument, switches to the next registered player. With a player name, switches directly to that player. |
+| `/register <player_name>` | Link your Discord account to a player. You will receive notifications about this player's items and gain access to player-specific commands such as `!todo`, `!wishlist`, and `!new`. You can register to multiple players. |
+| `/unregister [player_name]` | Unlink your Discord account from a player. If no player is specified, unregister from all linked players. |
+| `/players` | Display the list of all players in the current multiworld. |
+| `/current` | Display the player slot currently being tracked. This slot is used by commands such as `!todo`, `!hint`, and `!wishlist`. |
+| `/switch [player_name]` | Change the currently tracked player. Without an argument, switches to the next registered player. With a player name, switches directly to that player. |
 
 ---
 
@@ -85,13 +85,13 @@ These commands help track item locations and progression.
 
 | Command | Description |
 |--------|------------|
-| `!hint <text>` | Send a hint request to the tracker. Recognized hints may provide additional interactions, such as adding items to your todo list. |
-| `!allhints` | Display all hints available for the currently tracked player. |
-| `!wish <item_name>` | Add an available item to your wishlist. The item must have been hinted previously. You can see all hinted items with previous command.|
-| `!todo` | Display the current todo list of the tracked player. |
-| `!clearTodo` | Clear the entire todo list of the tracked player. |
-| `!removeTodo <item_name>` | Remove a specific item from the todo list. |
-| `!wishlist` | Display items that other players have added to their todo lists for the tracked player. |
+| `/hint <text>` | Send a hint request to the tracker. Recognized hints may provide additional interactions, such as adding items to your todo list. |
+| `/allhints` | Display all hints available for the currently tracked player. |
+| `/wish <item_name>` | Add an available item to your wishlist. The item must have been hinted previously. You can see all hinted items with previous command.|
+| `/todo` | Display the current todo list of the tracked player. |
+| `/clearTodo` | Clear the entire todo list of the tracked player. |
+| `/removeTodo <item_name>` | Remove a specific item from the todo list. |
+| `/wishlist` | Display items that other players have added to their todo lists for the tracked player. |
 
 ---
 
@@ -101,11 +101,11 @@ These commands control how the bot informs you about newly received items.
 
 | Command | Description |
 |--------|------------|
-| `!new` | Check newly received items since your last check. Results are sent through DM. |
-| `!enablenewitems` | Enable automatic DM notifications for new items when connecting to the game. |
-| `!disablenewitems` | Disable automatic DM notifications for new items. Use `!new` manually instead. |
-| `!enableping` | Enable notifications when another player finds an item currently present in your todo list. |
-| `!disableping` | Disable todo item notifications. |
+| `/new` | Check newly received items since your last check. Results are sent through DM. |
+| `/enablenewitems` | Enable automatic DM notifications for new items when connecting to the game. |
+| `/disablenewitems` | Disable automatic DM notifications for new items. Use `/new` manually instead. |
+| `/enableping` | Enable notifications when another player finds an item currently present in your todo list. |
+| `/disableping` | Disable todo item notifications. |
 
 ---
 
@@ -115,11 +115,11 @@ These commands provide information about the progress of the multiworld.
 
 | Command | Description |
 |--------|------------|
-| `!wastedOnArchipelago` | Display your total playtime in the multiworld session. |
-| `!deaths` | Display your total death count. |
-| `!deathgraph` | Generate a graph showing your deaths over time. |
-| `!globaldeaths` | Generate a comparative graph showing deaths for all players. |
-| `!progressGraph` | Generate a progress graph showing the percentage of checked locations for each player. The number of checks found is displayed above each bar. |
+| `/wastedOnArchipelago` | Display your total playtime in the multiworld session. |
+| `/deaths` | Display your total death count. |
+| `/deathgraph` | Generate a graph showing your deaths over time. |
+| `/globaldeaths` | Generate a comparative graph showing deaths for all players. |
+| `/progressGraph` | Generate a progress graph showing the percentage of checked locations for each player. The number of checks found is displayed above each bar. |
 
 ---
 
@@ -127,7 +127,7 @@ These commands provide information about the progress of the multiworld.
 
 | Command | Description |
 |--------|------------|
-| `!say <message>` | Send a message to the Archipelago MultiWorld client as the currently tracked player. |
+| `/say <message>` | Send a message to the Archipelago MultiWorld client as the currently tracked player. |
 
 ---
 
@@ -135,7 +135,7 @@ These commands provide information about the progress of the multiworld.
 
 | Command | Description |
 |--------|------------|
-| `!setcolor <color>` | Set your preferred display color for your player name. |
+| `/setcolor <color>` | Set your preferred display color for your player name. |
 
 ---
 
@@ -145,12 +145,12 @@ These commands are available to everyone if no administrator system is configure
 
 | Command | Description |
 |--------|------------|
-| `!isAdmin` | Check whether you are an administrator of the current world. |
-| `!computeChecks` | Compute the total number of checks for every player. This must be run before generating the progress graph for the first time. The bot connects to the multiworld for every player to retrieve this information, which may temporarily cause lag. |
-| `!deactivate` | Stop the bot from tracking the world associated with the current channel. |
-| `!listWorlds` | Display the number of worlds currently tracked by this server and their associated channels. |
-| `!deleteWorld` | Delete the world associated with the current channel. |
-| `!config <field_to_change> <new_value>` | Change one field of the config file, this prevent you from deleting world if a mistake was made in the config. All fields can be changed, bot will restart on his own. |
+| `/isAdmin` | Check whether you are an administrator of the current world. |
+| `/computeChecks` | Compute the total number of checks for every player. This must be run before generating the progress graph for the first time. The bot connects to the multiworld for every player to retrieve this information, which may temporarily cause lag. |
+| `/deactivate` | Stop the bot from tracking the world associated with the current channel. |
+| `/listWorlds` | Display the number of worlds currently tracked by this server and their associated channels. |
+| `/deleteWorld` | Delete the world associated with the current channel. |
+| `/config <field_to_change> <new_value>` | Change one field of the config file, this prevent you from deleting world if a mistake was made in the config. All fields can be changed, bot will restart on his own. |
 
 ---
 
@@ -158,4 +158,4 @@ These commands are available to everyone if no administrator system is configure
 
 | Command | Description |
 |--------|------------|
-| `!help [command]` | Display the list of available commands or detailed information about a specific command. |
+| `/help [command]` | Display the list of available commands or detailed information about a specific command. |
