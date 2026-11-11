@@ -47,6 +47,18 @@ If you plan to use this bot inside docker follow instructions [here](https://git
 
 All setup steps are described [here](https://github.com/TanguyBod/ArchiLink/blob/main/docs/setup.md).
 
+# Wishlist & Todolist
+
+Wishlists and Todolists are designed to improve coordination and communication between players. They allow players to explicitly share their progression needs and keep track of items that could help them advance.
+To add an item to your wishlist (hence in the sender todolist) you have two ways :
+    
+- When you hint an item with the `/hint <item_name>` you have a button under the hint to add the item to your wishlist
+- If an item has already been hinted at (or found in a shop for example) you can add it with the `/wish <item_name>` command. To see all known locations (i.e. hinted items not yet found) you can use the `/allhints` command.
+
+To view your wishlist (the items you need other players to retrieve), use the `/wishlist` command. To view your todolist (the items other players want you to retrieve), use the `/todo` command.
+
+When an item in your wishlist has been retrieved, you'll be notified by the bot with a ping (this can be disabled with `/disableping`).
+
 # Commands
 
 ## World management commands
